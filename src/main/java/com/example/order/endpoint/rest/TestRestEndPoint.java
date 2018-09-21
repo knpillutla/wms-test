@@ -54,7 +54,7 @@ public class TestRestEndPoint {
 		int orderNbr = rand.nextInt(10000);
 		OrderCreationRequestDTO orderCreationReq = new OrderCreationRequestDTO("AMZ", 1000, "", "", "", "TEST"+orderNbr,
 				"FIR0" +orderNbr , currentDate, shipDttm, expectedDeliveryDttm, "Express", false, "", "TestService",
-				"TestCreateOrder", "", "", "Krishna");
+				"TestCreateOrder", "", "", "Krishna", null);
 		return orderCreationReq;
 	}
 }
