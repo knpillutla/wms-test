@@ -57,5 +57,6 @@ public class EventReceiver {
 			System.out.println("Event Receiver, received event:" + obj);
 			System.out.println("loop:" + i + ",record count:" + recordCount);
 		}
+		System.out.println("count of records:" + recordCount);
 		return eventList;
 	}}

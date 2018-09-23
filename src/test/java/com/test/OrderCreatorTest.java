@@ -35,7 +35,7 @@ import com.example.test.service.EventPublisher;
 		"spring.cloud.stream.kafka.binder.brokers=localhost:29092" }, classes = { EventPublisher.class,
 				WMSStreams.class }, webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @EnableBinding(WMSStreams.class)
-public class CreateOrders {
+public class OrderCreatorTest {
 	@Autowired
 	WMSStreams wmsStreams;
 
@@ -61,7 +61,7 @@ public class CreateOrders {
 			OrderCreationRequestDTO orderReq = new OrderCreationRequestDTO("XYZ", 3456, "", "", "71", externalBatchNbr,
 					"F"+RandomStringUtils.random(9, false, true), orderDttm, shipDttm, deliveryDttm,deliveryType , false, "",
 					"Website", "OrderDownload", "", "", "Krishna", orderLines);
-			EventPublisher.send(wmsStreams.inboundOrders(), orderReq);
+			//EventPublisher.send(wmsStreams.inboundOrders(), orderReq);
 			List<OrderCreatedEvent> orderCreatedEventList = receiver.getEvent(OrderCreatedEvent.class);
 			System.out.println("Received Event:" + orderCreatedEventList.get(0));
 		}
