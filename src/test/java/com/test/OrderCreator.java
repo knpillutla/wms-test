@@ -22,12 +22,12 @@ public class OrderCreator {
 		List<OrderCreationRequestDTO> orderCreationReqList = new ArrayList();
 		for (InventoryCreatedEvent invnEventCreated : invnEventCreatedList) {
 			List<OrderLineCreationRequestDTO> orderLines = new ArrayList();
-			for (int line = 0; line < 1; line++) {
+			for (int line = 1; line <= 1; line++) {
 				Random rand = new Random();
 				InventoryDTO invnResponseResource = invnEventCreated.getInventoryDTO();
 				String upc = invnResponseResource.getItemBrcd();//RandomStringUtils.random(20, false, true);
 				Integer qty = invnResponseResource.getQty();//rand.nextInt(9);
-				OrderLineCreationRequestDTO orderLine = new OrderLineCreationRequestDTO(upc, qty, qty, "", "");
+				OrderLineCreationRequestDTO orderLine = new OrderLineCreationRequestDTO(line, upc, qty, qty, "", "");
 				orderLines.add(orderLine);
 			}
 			Date orderDttm = DateUtils.addDays(new java.util.Date(), 0);

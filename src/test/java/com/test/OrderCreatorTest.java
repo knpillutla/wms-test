@@ -47,11 +47,11 @@ public class OrderCreatorTest {
 		String externalBatchNbr = RandomStringUtils.random(10, false, true);
 		for (int i = 0; i < 50; i++) {
 			List<OrderLineCreationRequestDTO> orderLines = new ArrayList();
-			for (int line = 0; line < 4; line++) {
+			for (int line = 1; line <= 4; line++) {
 				Random rand = new Random();
 				String upc = RandomStringUtils.random(20, false, true);
 				Integer qty = rand.nextInt(9);
-				OrderLineCreationRequestDTO orderLine = new OrderLineCreationRequestDTO(upc, qty, qty, "", "");
+				OrderLineCreationRequestDTO orderLine = new OrderLineCreationRequestDTO(line, upc, qty, qty, "", "");
 				orderLines.add(orderLine);
 			}
 			Date orderDttm = DateUtils.addDays(new java.util.Date(), 0);
