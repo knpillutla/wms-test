@@ -31,7 +31,7 @@
 	<dependencies>
 		<dependency>
 		    <groupId>com.example.wms</groupId>
-		    <artifactId>order-interfaces</artifactId>
+		    <artifactId>customer-order-interfaces</artifactId>
 		    <version>0.0.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>

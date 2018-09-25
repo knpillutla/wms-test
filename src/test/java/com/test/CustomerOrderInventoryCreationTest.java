@@ -13,9 +13,9 @@ import org.springframework.test.context.junit4.SpringRunner;
 import com.example.inventory.dto.events.ASNUPCReceivedEvent;
 import com.example.inventory.dto.events.InventoryCreatedEvent;
 import com.example.inventory.dto.requests.InventoryCreationRequestDTO;
-import com.example.order.dto.events.OrderCreatedEvent;
-import com.example.order.dto.events.OrderDownloadEvent;
-import com.example.order.dto.requests.OrderCreationRequestDTO;
+import com.example.order.dto.events.CustomerOrderCreatedEvent;
+import com.example.order.dto.events.CustomerOrderDownloadEvent;
+import com.example.order.dto.requests.CustomerOrderCreationRequestDTO;
 import com.example.test.service.EventPublisher;
 
 import junit.framework.Assert;
@@ -34,17 +34,17 @@ import junit.framework.Assert;
 		"spring.cloud.stream.kafka.binder.brokers=localhost:29092" }, classes = { EventPublisher.class,
 				WMSStreams.class }, webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @EnableBinding(WMSStreams.class)
-public class OrderInventoryCreationTest {
+public class CustomerOrderInventoryCreationTest {
 	@Autowired
 	WMSStreams wmsStreams;
 	
 	List<InventoryCreatedEvent> invnCreatedEventList = new ArrayList();
-	List<OrderCreatedEvent> orderCreatedEventList = new ArrayList();
+	List<CustomerOrderCreatedEvent> orderCreatedEventList = new ArrayList();
 	
 	@Test
-	public void createInventoryAndOrdersOneOrdeLinePerOrder() throws Exception {
+	public void createInventoryAndCustomerOrdersOneOrdeLinePerCustomerOrder() throws Exception {
 		int numOfUPCS = 1;
-		EventReceiver inventoryEventReceiver = new EventReceiver("wmsinventorycreator-consumer", "inventory-out");
+		EventReceiver inventoryEventReceiver = new EventReceiver("wmsinventorycreator-consumer", wmsStreams.INVENTORY_OUTPUT);
 		List<InventoryCreationRequestDTO> invnCreationReqList = InventoryCreator.createNewInventoryRecords(numOfUPCS);
 		for (InventoryCreationRequestDTO inventoryReq : invnCreationReqList) {
 			ASNUPCReceivedEvent upcReceivedEvent = new ASNUPCReceivedEvent(inventoryReq.getBusName(), inventoryReq.getLocnNbr(), inventoryReq.getBusUnit(), inventoryReq.getItemBrcd(), inventoryReq.getQty());
@@ -55,15 +55,15 @@ public class OrderInventoryCreationTest {
 		System.out.println("Inventory Created....");
 		
 		Assert.assertEquals(numOfUPCS, invnCreatedEventList.size());
-		EventReceiver orderEventReceiver = new EventReceiver("wmsordercreator-consumer", "orders-out");
-		List<OrderCreationRequestDTO> orderCreationReqList = OrderCreator.createNewOrders(invnCreatedEventList);
-		for (OrderCreationRequestDTO orderCreationReq : orderCreationReqList) {
-			OrderDownloadEvent orderDloadEvent = new OrderDownloadEvent(orderCreationReq);
-			EventPublisher.send(wmsStreams.inboundOrders(), orderDloadEvent,orderDloadEvent.getHeaderMap());
-			List<OrderCreatedEvent> orderEventList = orderEventReceiver.getEvent(OrderCreatedEvent.class);
+		EventReceiver orderEventReceiver = new EventReceiver("wmsordercreator-consumer", wmsStreams.CUSTOMER_ORDERS_OUTPUT);
+		List<CustomerOrderCreationRequestDTO> orderCreationReqList = CustomerOrderCreator.createNewCustomerOrders(invnCreatedEventList);
+		for (CustomerOrderCreationRequestDTO orderCreationReq : orderCreationReqList) {
+			CustomerOrderDownloadEvent orderDloadEvent = new CustomerOrderDownloadEvent(orderCreationReq);
+			EventPublisher.send(wmsStreams.inboundCustomerOrders(), orderDloadEvent,orderDloadEvent.getHeaderMap());
+			List<CustomerOrderCreatedEvent> orderEventList = orderEventReceiver.getEvent(CustomerOrderCreatedEvent.class);
 			orderCreatedEventList.addAll(orderEventList);
 		}
-		System.out.println("Orders Created....");
+		System.out.println("CustomerOrders Created....");
 		Assert.assertEquals(numOfUPCS, orderCreatedEventList.size());
 	}
 

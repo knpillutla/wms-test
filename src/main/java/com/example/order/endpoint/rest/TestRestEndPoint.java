@@ -12,7 +12,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import com.example.order.dto.requests.OrderCreationRequestDTO;
+import com.example.order.dto.requests.CustomerOrderCreationRequestDTO;
 import com.example.test.service.EventPublisher;
 
 import io.swagger.annotations.Api;
@@ -20,7 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Controller
 @RequestMapping("/test/v1")
-@Api(value="Order Service", description="Operations pertaining to Orders")
+@Api(value="CustomerOrder Service", description="Operations pertaining to CustomerOrders")
 @RefreshScope
 @Slf4j
 public class TestRestEndPoint {
@@ -29,7 +29,7 @@ public class TestRestEndPoint {
 	EventPublisher sender;
 	
 
-	@Value("${message: Order Service - Config Server is not working..please check}")
+	@Value("${message: CustomerOrder Service - Config Server is not working..please check}")
     private String msg;
     
 	@GetMapping("/hello")
@@ -37,12 +37,12 @@ public class TestRestEndPoint {
 		return ResponseEntity.ok(msg);
 	}
 	@GetMapping("/order")
-	public ResponseEntity testOrder() throws Exception {
-		//EventPublisher.send(wmsStreams.inboundOrders(), createNewOrder());
+	public ResponseEntity testCustomerOrder() throws Exception {
+		//EventPublisher.send(wmsStreams.inboundCustomerOrders(), createNewCustomerOrder());
 		return ResponseEntity.ok(msg);
 	}
 
-	public OrderCreationRequestDTO createNewOrder() {
+	public CustomerOrderCreationRequestDTO createNewCustomerOrder() {
 		Date currentDate = new java.util.Date();
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(currentDate);
@@ -52,9 +52,9 @@ public class TestRestEndPoint {
 		Date expectedDeliveryDttm = cal.getTime();
 		Random rand = new Random();
 		int orderNbr = rand.nextInt(10000);
-		OrderCreationRequestDTO orderCreationReq = new OrderCreationRequestDTO("AMZ", 1000, "", "", "", "TEST"+orderNbr,
+		CustomerOrderCreationRequestDTO orderCreationReq = new CustomerOrderCreationRequestDTO("AMZ", 1000, "", "", "", "TEST"+orderNbr,
 				"FIR0" +orderNbr , currentDate, shipDttm, expectedDeliveryDttm, "Express", false, "", "TestService",
-				"TestCreateOrder", "", "", "Krishna", null);
+				"TestCreateCustomerOrder", "", "", "Krishna", null);
 		return orderCreationReq;
 	}
 }
