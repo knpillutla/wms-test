@@ -15,7 +15,10 @@ import com.example.inventory.dto.events.InventoryCreatedEvent;
 import com.example.inventory.dto.requests.InventoryCreationRequestDTO;
 import com.example.order.dto.events.CustomerOrderCreatedEvent;
 import com.example.order.dto.events.CustomerOrderDownloadEvent;
+import com.example.order.dto.events.OrderPlannedEvent;
 import com.example.order.dto.requests.CustomerOrderCreationRequestDTO;
+import com.example.picking.dto.events.LowPickEvent;
+import com.example.picking.dto.responses.PickDTO;
 import com.example.test.service.EventPublisher;
 
 import junit.framework.Assert;
@@ -65,6 +68,15 @@ public class CustomerOrderInventoryCreationTest {
 		}
 		System.out.println("CustomerOrders Created....");
 		Assert.assertEquals(numOfUPCS, orderCreatedEventList.size());
+
+		// create low pick event to start order fulfillment
+		//EventReceiver orderPlannedEventReceiver = new EventReceiver("wmsordercreator-consumer", wmsStreams.CUSTOMER_ORDERS_OUTPUT);
+		LowPickEvent lowPickEvent = new LowPickEvent("XYZ",3456, "71", "", "", "", "", "");
+		EventPublisher.send(wmsStreams.outboundPick(), lowPickEvent,lowPickEvent.getHeaderMap());
+		List<OrderPlannedEvent> orderPlannedEventList = orderEventReceiver.getEvent(OrderPlannedEvent.class);
+		System.out.println("Orders Planned Created....");
+		Assert.assertEquals(numOfUPCS, orderPlannedEventList.size());
+	
 	}
 
 }

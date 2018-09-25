@@ -10,6 +10,7 @@ public interface WMSStreams {
 	String INVENTORY_OUTPUT = "inventory-out";
 	String CUSTOMER_ORDERS_INPUT = "customer-orders-in";
 	String CUSTOMER_ORDERS_OUTPUT = "customer-orders-out";
+	String PICK_OUTPUT = "pick-out";
 
 	@Output(INVENTORY_INPUT)
     public MessageChannel inboundInventory();
@@ -17,4 +18,6 @@ public interface WMSStreams {
 	@Output(CUSTOMER_ORDERS_INPUT)
     public MessageChannel inboundCustomerOrders();
 
+	@Output(PICK_OUTPUT)
+    public MessageChannel outboundPick();
 }
