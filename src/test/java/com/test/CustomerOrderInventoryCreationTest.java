@@ -44,7 +44,7 @@ public class CustomerOrderInventoryCreationTest {
 	List<InventoryCreatedEvent> invnCreatedEventList = new ArrayList();
 	List<CustomerOrderCreatedEvent> orderCreatedEventList = new ArrayList();
 	
-	//@Test
+	@Test
 	public void createInventoryAndCustomerOrdersOneOrdeLinePerCustomerOrder() throws Exception {
 		int numOfUPCS = 1;
 		EventReceiver inventoryEventReceiver = new EventReceiver("wmsinventorycreator-consumer", wmsStreams.INVENTORY_OUTPUT);
@@ -68,7 +68,7 @@ public class CustomerOrderInventoryCreationTest {
 		}
 		System.out.println("CustomerOrders Created....");
 		Assert.assertEquals(numOfUPCS, orderCreatedEventList.size());
-
+/*
 		// create low pick event to start order fulfillment
 		EventReceiver orderPlannedEventReceiver = new EventReceiver("ordercreator-consumer", wmsStreams.ORDERS_OUTPUT);
 		LowPickEvent lowPickEvent = new LowPickEvent("XYZ",3456, "71", "", "", "", "", "");
@@ -76,10 +76,10 @@ public class CustomerOrderInventoryCreationTest {
 		List<OrderPlannedEvent> orderPlannedEventList = orderEventReceiver.getEvent(OrderPlannedEvent.class);
 		System.out.println("Orders Planned Created....");
 		Assert.assertEquals(numOfUPCS, orderPlannedEventList.size());
-	
+*/	
 	}
 	
-	@Test
+	//@Test
 	public void createLowPickEvent() throws Exception {
 		// create low pick event to start order fulfillment
 		EventReceiver orderPlannedEventReceiver = new EventReceiver("ordercreator-consumer", wmsStreams.ORDERS_OUTPUT);
