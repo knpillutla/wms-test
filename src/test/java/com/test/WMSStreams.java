@@ -12,6 +12,8 @@ public interface WMSStreams {
 	String CUSTOMER_ORDERS_OUTPUT = "customer-orders-out";
 	String ORDERS_OUTPUT = "orders-out";
 	String PICK_OUTPUT = "pick-out";
+	String PACK_OUTPUT = "pack-out";
+	String SHIP_OUTPUT = "ship-out";
 
 	@Output(INVENTORY_INPUT)
     public MessageChannel inboundInventory();
@@ -21,4 +23,10 @@ public interface WMSStreams {
 
 	@Output(PICK_OUTPUT)
     public MessageChannel outboundPick();
+
+	@Output(PACK_OUTPUT)
+    public MessageChannel outboundPack();
+
+	@Output(SHIP_OUTPUT)
+    public MessageChannel outboundShip();
 }
