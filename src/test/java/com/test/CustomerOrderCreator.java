@@ -2,6 +2,7 @@ package com.test;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
@@ -13,15 +14,17 @@ import com.example.inventory.dto.responses.InventoryDTO;
 import com.example.order.dto.requests.CustomerOrderCreationRequestDTO;
 import com.example.order.dto.requests.CustomerOrderLineCreationRequestDTO;
 public class CustomerOrderCreator {
-	public static List<CustomerOrderCreationRequestDTO> createNewCustomerOrders(List<InventoryCreatedEvent> invnEventCreatedList ) throws Exception {
+	public static List<CustomerOrderCreationRequestDTO> createNewCustomerOrders(List<InventoryCreatedEvent> invnEventCreatedList, int numOfOrders, int numOfOrderLines ) throws Exception {
 		//EventReceiver receiver = new EventReceiver("wmsinventorycreator-consumer", "orders-out");
 		String externalBatchNbr = RandomStringUtils.random(10, false, true);
 		List<CustomerOrderCreationRequestDTO> orderCreationReqList = new ArrayList();
-		for (InventoryCreatedEvent invnEventCreated : invnEventCreatedList) {
+		Iterator<InventoryCreatedEvent> invnIterator = invnEventCreatedList.iterator();
+		for (int i=0;i<numOfOrders;i++) {
 			List<CustomerOrderLineCreationRequestDTO> orderLines = new ArrayList();
-			for (int line = 1; line <= 1; line++) {
+			for (int line = 1; line <= numOfOrderLines; line++) {
 				Random rand = new Random();
-				InventoryDTO invnResponseResource = invnEventCreated.getInventoryDTO();
+				InventoryCreatedEvent invnCreatedEvent = invnIterator.next();
+				InventoryDTO invnResponseResource = invnCreatedEvent.getInventoryDTO();
 				String upc = invnResponseResource.getItemBrcd();//RandomStringUtils.random(20, false, true);
 				Integer qty = invnResponseResource.getQty();//rand.nextInt(9);
 				CustomerOrderLineCreationRequestDTO orderLine = new CustomerOrderLineCreationRequestDTO(line, upc, qty, qty, "", "");
