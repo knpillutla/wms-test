@@ -193,7 +193,7 @@ public class WareshouseCustomerOrderInventoryCreationTest {
 					pickDTO.getBatchNbr(), pickDTO.getBusName(), pickDTO.getLocnNbr(), pickDTO.getBusUnit(),
 					pickDTO.getCompany(), pickDTO.getDivision(), pickDTO.getOrderNbr(), pickDTO.getLocnBrcd(),
 					pickDTO.getItemBrcd(), pickDTO.getQty(), containerNbr, userId);
-			String pickConfirmURL = "http://localhost:9076/picking/v1/" + busName + "/" + locnNbr + "/picks/"
+			String pickConfirmURL = "http://localhost:" + pickingPort + "/picking/v1/" + busName + "/" + locnNbr + "/picks/"
 					+ pickDTO.getId();
 			System.out.println("pick confirm url:" + pickConfirmURL);
 			PickDTO pickConfirmDTO = restTemplate.postForObject(pickConfirmURL, pickConfirmObj, PickDTO.class);
@@ -224,7 +224,7 @@ public class WareshouseCustomerOrderInventoryCreationTest {
 					packDTO.getBatchNbr(), packDTO.getBusName(), packDTO.getLocnNbr(), packDTO.getBusUnit(),
 					packDTO.getCompany(), packDTO.getDivision(), packDTO.getOrderNbr(), packDTO.getItemBrcd(),
 					packDTO.getQty(), containerNbr, "", userId);
-			String packConfirmURL = "http://localhost:9298/packing/v1/" + busName + "/" + locnNbr + "/packs/"
+			String packConfirmURL = "http://localhost:" + packingPort + "/packing/v1/" + busName + "/" + locnNbr + "/packs/"
 					+ packDTO.getId();
 			System.out.println("pack confirm url:" + packConfirmURL);
 			PackDTO pickConfirmDTO = restTemplate.postForObject(packConfirmURL, packConfirmObj, PackDTO.class);
