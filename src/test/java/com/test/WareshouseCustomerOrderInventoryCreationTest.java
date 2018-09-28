@@ -60,6 +60,13 @@ public class WareshouseCustomerOrderInventoryCreationTest {
 	List<InventoryCreatedEvent> invnCreatedEventList = new ArrayList();
 	List<CustomerOrderCreatedEvent> customerOrderCreatedEventList = new ArrayList();
 
+	String customerOrderPort = "9010";
+	String orderPlannerPort = "9011";
+	String inventoryPort = "9012";
+	String pickingPort = "9013";
+	String packingPort = "9014";
+	String shippingPort = "9015";
+	
 	@Test
 	public void createInventoryAndCustomerOrdersOneOrdeLinePerCustomerOrder() throws Exception {
 		String busName = "XYZ";
@@ -92,7 +99,7 @@ public class WareshouseCustomerOrderInventoryCreationTest {
 		}
 		System.out.println("Inventory Created....");
 
-		Assert.assertEquals(numOfOrderLines, invnCreatedEventList.size());
+		Assert.assertEquals(numOfOrders*numOfOrderLines, invnCreatedEventList.size());
 		List<CustomerOrderCreationRequestDTO> orderCreationReqList = CustomerOrderCreator
 				.createNewCustomerOrders(invnCreatedEventList, numOfOrders, numOfOrderLines);
 		for (CustomerOrderCreationRequestDTO orderCreationReq : orderCreationReqList) {
@@ -163,7 +170,7 @@ public class WareshouseCustomerOrderInventoryCreationTest {
 		String batchNbr = "";
 		RestTemplate restTemplate = new RestTemplate();
 		OrderFulfillmentResponseDTO response = restTemplate.postForObject(
-				"http://localhost:9296/orders/v1/" + busName + "/" + locnNbr, orderFulfillmentReq,
+				"http://localhost:" + orderPlannerPort + "/orders/v1/" + busName + "/" + locnNbr, orderFulfillmentReq,
 				OrderFulfillmentResponseDTO.class);
 		batchNbr = response.getBatchNbr();
 		System.out.println("order fulfillment response for warehouse:" + response);
@@ -176,8 +183,7 @@ public class WareshouseCustomerOrderInventoryCreationTest {
 		int numOfPicks = numOfOrders * numOfOrderLines;
 		String containerNbr = 5 + RandomStringUtils.random(19, false, true);
 		for (int i = 0; i < numOfPicks; i++) {
-			String pickAssignURL = "http://localhost:9076/picking/v1/" + busName + "/" + locnNbr + "/picks/next/"
-					+ batchNbr + "/" + userId;
+			String pickAssignURL = "http://localhost:" + pickingPort + "/picking/v1/" + busName + "/" + locnNbr + "/picks/next/" + batchNbr + "/" + userId;
 			System.out.println("pick assign url:" + pickAssignURL);
 			// assign next pick
 			PickDTO pickDTO = restTemplate.postForObject(pickAssignURL, null, PickDTO.class);
@@ -200,7 +206,7 @@ public class WareshouseCustomerOrderInventoryCreationTest {
 			int numOfOrders, int numOfOrderLines, String batchNbr, String userId, String containerNbr) {
 		RestTemplate restTemplate = new RestTemplate();
 		int numOfPicks = numOfOrders * numOfOrderLines;
-		String packsGETURL = "http://localhost:9298/packing/v1/" + busName + "/" + locnNbr + "/packs/container/"
+		String packsGETURL = "http://localhost:" + packingPort + "/packing/v1/" + busName + "/" + locnNbr + "/packs/container/"
 				+ containerNbr;
 		System.out.println("pack getpacks url:" + packsGETURL);
 		// List<PackDTO> packDTOList = restTemplate.getForObject(packsGETURL,

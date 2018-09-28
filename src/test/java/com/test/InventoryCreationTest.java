@@ -40,7 +40,7 @@ import junit.framework.Assert;
 		"spring.cloud.stream.kafka.binder.brokers=localhost:29092" }, classes = { EventPublisher.class,
 				WMSStreams.class }, webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @EnableBinding(WMSStreams.class)
-public class SmallStoreCustomerOrderInventoryCreationTest {
+public class InventoryCreationTest {
 	@Autowired
 	WMSStreams wmsStreams;
 	List<InventoryCreatedEvent> invnCreatedEventList = new ArrayList();
@@ -54,8 +54,8 @@ public class SmallStoreCustomerOrderInventoryCreationTest {
 		String company = "IE";
 		String division = "09";
 		String userId = "Krishna";
-		int numOfOrders = 1;
-		int numOfOrderLines = 1; // num of order lines
+		int numOfOrders = 5;
+		int numOfOrderLines = 5; // num of order lines
 		EventReceiver inventoryEventReceiver = new EventReceiver("ss-wmsinventorycreator-consumer",
 				wmsStreams.INVENTORY_OUTPUT);
 		List<InventoryCreationRequestDTO> invnCreationReqList = InventoryCreator
@@ -72,60 +72,5 @@ public class SmallStoreCustomerOrderInventoryCreationTest {
 		System.out.println("Inventory Created....");
 
 		Assert.assertEquals(numOfOrders*numOfOrderLines, invnCreatedEventList.size());
-		EventReceiver orderEventReceiver = new EventReceiver("ss-wmscustomerordercreator-consumer",
-				wmsStreams.CUSTOMER_ORDERS_OUTPUT);
-		List<CustomerOrderCreationRequestDTO> orderCreationReqList = CustomerOrderCreator
-				.createNewCustomerOrders(invnCreatedEventList, numOfOrders, numOfOrderLines);
-		for (CustomerOrderCreationRequestDTO orderCreationReq : orderCreationReqList) {
-			CustomerOrderDownloadEvent orderDloadEvent = new CustomerOrderDownloadEvent(orderCreationReq);
-			EventPublisher.send(wmsStreams.inboundCustomerOrders(), orderDloadEvent, orderDloadEvent.getHeaderMap());
-			List<CustomerOrderCreatedEvent> orderEventList = orderEventReceiver
-					.getEvent(CustomerOrderCreatedEvent.class);
-			orderCreatedEventList.addAll(orderEventList);
-		}
-		System.out.println("CustomerOrders Created....");
-		invokeOrderFulfillmentForSmallStore(busName, locnNbr, company, division, busUnit,
-				RandomStringUtils.random(6, true, false), 5);
-		Assert.assertEquals(numOfOrderLines, orderCreatedEventList.size());
-		/*
-		 * // create low pick event to start order fulfillment EventReceiver
-		 * orderPlannedEventReceiver = new EventReceiver("ordercreator-consumer",
-		 * wmsStreams.ORDERS_OUTPUT); LowPickEvent lowPickEvent = new
-		 * LowPickEvent("XYZ",3456, "71", "", "", "", "", "");
-		 * EventPublisher.send(wmsStreams.outboundPick(),
-		 * lowPickEvent,lowPickEvent.getHeaderMap()); List<OrderPlannedEvent>
-		 * orderPlannedEventList = orderEventReceiver.getEvent(OrderPlannedEvent.class);
-		 * System.out.println("Orders Planned Created....");
-		 * Assert.assertEquals(numOfUPCS, orderPlannedEventList.size());
-		 */
 	}
-
-	// @Test
-	public void createLowPickEvent() throws Exception {
-		// create low pick event to start order fulfillment
-		EventReceiver orderPlannedEventReceiver = new EventReceiver("ss-ordercreator-consumer", wmsStreams.ORDERS_OUTPUT);
-		LowPickEvent lowPickEvent = new LowPickEvent("XYZ", 3456, "71", "", "", "", "", "");
-		EventPublisher.send(wmsStreams.outboundPick(), lowPickEvent, lowPickEvent.getHeaderMap());
-		List<OrderPlannedEvent> orderPlannedEventList = orderPlannedEventReceiver.getEvent(OrderPlannedEvent.class);
-		System.out.println("Orders Planned Created....");
-		Assert.assertEquals(1, orderPlannedEventList.size());
-	}
-
-	public void invokeOrderFulfillmentForSmallStore(String busName, Integer locnNbr, String company, String division,
-			String busUnit, String userId, int numOfOrdersInBatch) {
-		OrderFulfillmentRequestDTO orderFulfillmentReq = new OrderFulfillmentRequestDTO();
-		orderFulfillmentReq.setBusName(busName);
-		orderFulfillmentReq.setLocnNbr(locnNbr);
-		orderFulfillmentReq.setCompany(company);
-		orderFulfillmentReq.setDivision(division);
-		orderFulfillmentReq.setBusUnit(busUnit);
-		orderFulfillmentReq.setSmallStoreMode(true);
-		orderFulfillmentReq.setNumOfOrders(numOfOrdersInBatch);
-		RestTemplate restTemplate = new RestTemplate();
-		OrderFulfillmentResponseDTO response = restTemplate.postForObject(
-				"http://localhost:9296/orders/v1/" + busName + "/" + locnNbr, orderFulfillmentReq,
-				OrderFulfillmentResponseDTO.class);
-		System.out.println("rest response:" + response);
-	}
-
 }
