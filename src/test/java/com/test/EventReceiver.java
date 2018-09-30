@@ -27,7 +27,11 @@ public class EventReceiver {
 	public EventReceiver(String consumerGroup, String topicName) {
 		this.topicName = topicName;
 		Properties props = new Properties();
-		props.put("bootstrap.servers", "192.168.56.1:29092");
+		//props.put("bootstrap.servers", "192.168.56.1:29092");
+		props.put("bootstrap.servers", "35.239.238.83:9092");
+		props.put("auto.create.topics.enable", "false");
+//		props.put("advertised.host.name", "35.239.238.83");
+//		props.put("advertised.listeners", "PLAINTEXT://35.239.238.83:9092");
 //		 props.put("sasl.jaas.config", "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"USER\" password=\"PASSWORD\";");
 //		 props.put("security.protocol", "SASL_SSL");
 //		 props.put("sasl.mechanism", "PLAIN");
@@ -37,6 +41,7 @@ public class EventReceiver {
 		props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
 		props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
 		props.put("spring.cloud.stream.kafka.bindings." + topicName + ".consumer.autoCommitOffset", false);
+		props.put("logging.level.org.apache.kafka","TRACE");
 		//props.put("spring.cloud.stream.kafka.bindings." + topicName + "inventory-out.consumer.enable.auto.commit", false);
 		props.put("enable.auto.commit", false);
 		props.put("auto.commit.interval.ms", "1000");
