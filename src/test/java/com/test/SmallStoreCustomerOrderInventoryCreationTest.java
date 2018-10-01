@@ -12,13 +12,13 @@ import org.springframework.cloud.stream.annotation.EnableBinding;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.RestTemplate;
 
+import com.example.customer.order.dto.events.CustomerOrderCreatedEvent;
+import com.example.customer.order.dto.events.CustomerOrderDownloadEvent;
+import com.example.customer.order.dto.requests.CustomerOrderCreationRequestDTO;
 import com.example.inventory.dto.events.ASNUPCReceivedEvent;
 import com.example.inventory.dto.events.InventoryCreatedEvent;
 import com.example.inventory.dto.requests.InventoryCreationRequestDTO;
-import com.example.order.dto.events.CustomerOrderCreatedEvent;
-import com.example.order.dto.events.CustomerOrderDownloadEvent;
 import com.example.order.dto.events.OrderPlannedEvent;
-import com.example.order.dto.requests.CustomerOrderCreationRequestDTO;
 import com.example.order.dto.requests.OrderFulfillmentRequestDTO;
 import com.example.order.dto.responses.OrderFulfillmentResponseDTO;
 import com.example.picking.dto.events.LowPickEvent;

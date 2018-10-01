@@ -2,33 +2,32 @@ package com.test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
 
 import org.apache.kafka.clients.consumer.Consumer;
-import org.apache.kafka.clients.consumer.ConsumerRebalanceListener;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.common.TopicPartition;
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JSR310Module;
 
 public class EventReceiver {
 	Consumer consumer;
 	String topicName;
-	ObjectMapper mapper = new ObjectMapper();
+	ObjectMapper mapper= null;
 
 	public EventReceiver(String consumerGroup, String topicName) {
 		this.topicName = topicName;
+		mapper = this.getObjectMapper();
 		Properties props = new Properties();
-		//props.put("bootstrap.servers", "192.168.56.1:29092");
-		props.put("bootstrap.servers", "35.239.238.83:9092");
+		props.put("bootstrap.servers", "192.168.56.1:29092");
+		//props.put("bootstrap.servers", "35.239.238.83:9092");
 		props.put("auto.create.topics.enable", "false");
 //		props.put("advertised.host.name", "35.239.238.83");
 //		props.put("advertised.listeners", "PLAINTEXT://35.239.238.83:9092");
@@ -104,7 +103,7 @@ public class EventReceiver {
 			.println("consumer, seeking position to :" + entry.getKey() + ": position:" + (consumer.position(entry.getKey())));
 
 		}*/
-		consumer.poll(100);
+		consumer.poll(2000);
 		consumer.commitSync();
 	}
 
@@ -133,4 +132,12 @@ public class EventReceiver {
 		System.out.println("count of records:" + eventList.size());
 		return eventList;
 	}
+	
+    public ObjectMapper getObjectMapper() {
+        return Jackson2ObjectMapperBuilder.json()
+                .serializationInclusion(JsonInclude.Include.NON_NULL) // Don’t include null values
+                .featuresToDisable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS) //ISODate
+                .modules(new JSR310Module())
+                .build();
+    }	
 }

@@ -1,7 +1,6 @@
 package com.example.order.endpoint.rest;
 
-import java.util.Calendar;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +11,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import com.example.order.dto.requests.CustomerOrderCreationRequestDTO;
+import com.example.customer.order.dto.requests.CustomerOrderCreationRequestDTO;
 import com.example.test.service.EventPublisher;
 
 import io.swagger.annotations.Api;
@@ -43,13 +42,9 @@ public class TestRestEndPoint {
 	}
 
 	public CustomerOrderCreationRequestDTO createNewCustomerOrder() {
-		Date currentDate = new java.util.Date();
-		Calendar cal = Calendar.getInstance();
-		cal.setTime(currentDate);
-		cal.add(Calendar.DATE, 5);
-		Date shipDttm = cal.getTime();
-		cal.add(Calendar.DATE, 10);
-		Date expectedDeliveryDttm = cal.getTime();
+		LocalDateTime currentDate = LocalDateTime.now();
+		LocalDateTime shipDttm = currentDate.plusDays(5);
+		LocalDateTime expectedDeliveryDttm = currentDate.plusDays(7);
 		Random rand = new Random();
 		int orderNbr = rand.nextInt(10000);
 		CustomerOrderCreationRequestDTO orderCreationReq = new CustomerOrderCreationRequestDTO("AMZ", 1000, "", "", "", "TEST"+orderNbr,

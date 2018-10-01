@@ -15,17 +15,17 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.RestTemplate;
 
+import com.example.customer.order.dto.events.CustomerOrderCreatedEvent;
+import com.example.customer.order.dto.events.CustomerOrderDownloadEvent;
+import com.example.customer.order.dto.requests.CustomerOrderCreationRequestDTO;
 import com.example.inventory.dto.events.ASNUPCReceivedEvent;
 import com.example.inventory.dto.events.InventoryAllocatedEvent;
 import com.example.inventory.dto.events.InventoryCreatedEvent;
 import com.example.inventory.dto.requests.InventoryCreationRequestDTO;
-import com.example.order.dto.events.CustomerOrderCreatedEvent;
-import com.example.order.dto.events.CustomerOrderDownloadEvent;
 import com.example.order.dto.events.OrderCreatedEvent;
 import com.example.order.dto.events.OrderPackedEvent;
 import com.example.order.dto.events.OrderPickedEvent;
 import com.example.order.dto.events.OrderPlannedEvent;
-import com.example.order.dto.requests.CustomerOrderCreationRequestDTO;
 import com.example.order.dto.requests.OrderFulfillmentRequestDTO;
 import com.example.order.dto.responses.OrderFulfillmentResponseDTO;
 import com.example.packing.dto.events.PackConfirmationEvent;
@@ -54,9 +54,10 @@ import junit.framework.Assert;
 		//"spring.cloud.stream.bindings.inventory-out.contentType=application/json",
 		// "spring.kafka.consumer.group-id=test",
 		"spring.cloud.stream.kafka.binder.auto-create-topics=false",
-//		"spring.cloud.stream.kafka.binder.brokers=localhost:29092" },
+		"spring.cloud.stream.kafka.binder.brokers=localhost:29092",
+		"spring.jackson.serialization.WRITE_DATES_AS_TIMESTAMPS=false",},
+//"spring.cloud.stream.kafka.binder.brokers=35.239.238.83:9092"},
 //		"advertised.host.name", "35.239.238.83",
-		"spring.cloud.stream.kafka.binder.brokers=35.239.238.83:9092"},
 //		"spring.cloud.stream.kafka.binder.zkNodes=35.239.238.83:2181"},
 		classes = { EventPublisher.class,
 				WMSStreams.class }, webEnvironment = SpringBootTest.WebEnvironment.NONE)
@@ -67,20 +68,20 @@ public class WareshouseCustomerOrderInventoryCreationTest {
 	List<InventoryCreatedEvent> invnCreatedEventList = new ArrayList();
 	List<CustomerOrderCreatedEvent> customerOrderCreatedEventList = new ArrayList();
 
-/*	String customerOrderPort = "9010";
+	String customerOrderPort = "9010";
 	String orderPlannerPort = "9011";
 	String inventoryPort = "9012";
 	String pickingPort = "9013";
 	String packingPort = "9014";
 	String shippingPort = "9015";
 	String orderPlannerServiceHost = "localhost";
-	String pickServiceHost = "localhost";
-	String packServiceHost = "localhost";
+	String pickingServiceHost = "localhost";
+	String packingServiceHost = "localhost";
 	String inventoryServiceHost = "localhost";
 	String customerOrderServiceHost = "localhost";
 	String shippingServiceHost = "localhost";
 
-*/
+
 	// gcp ports
 /*	String configPort = "32444";
 	String customerOrderPort = "32445";
@@ -95,7 +96,7 @@ public class WareshouseCustomerOrderInventoryCreationTest {
 	String inventoryServiceHost = "35.236.201.110";
 	String customerOrderServiceHost = "35.221.38.104";
 	String shippingServiceHost = "35.221.46.27";*/
-	String configPort = "8888";
+/*	String configPort = "8888";
 	String customerOrderPort = "8080";
 	String inventoryPort = "8080";
 	String orderPlannerPort = "8080";
@@ -107,7 +108,7 @@ public class WareshouseCustomerOrderInventoryCreationTest {
 	String packingServiceHost = "35.221.59.200";
 	String inventoryServiceHost = "35.236.201.110";
 	String customerOrderServiceHost = "35.221.38.104";
-	String shippingServiceHost = "35.221.46.27";
+	String shippingServiceHost = "35.221.46.27";*/
 	@Test
 	public void createInventoryAndCustomerOrdersOneOrdeLinePerCustomerOrder() throws Exception {
 		String busName = "XYZ";

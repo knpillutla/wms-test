@@ -1,11 +1,11 @@
 package com.example.test;
 
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Scheduled;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+
 import org.springframework.stereotype.Component;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
@@ -15,7 +15,7 @@ public class ScheduledLogger {
 
 /*    @Scheduled(fixedRate = 5000)
 */    public void reportCurrentTime() {
-        Date date = new Date();
+        LocalDateTime date = LocalDateTime.now();
         log.info("The time is now {}", dateFormat.format(date));
     }
 }

@@ -3,25 +3,17 @@ package com.test;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.stream.annotation.EnableBinding;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.web.client.RestTemplate;
 
+import com.example.customer.order.dto.events.CustomerOrderCreatedEvent;
 import com.example.inventory.dto.events.ASNUPCReceivedEvent;
 import com.example.inventory.dto.events.InventoryCreatedEvent;
 import com.example.inventory.dto.requests.InventoryCreationRequestDTO;
-import com.example.order.dto.events.CustomerOrderCreatedEvent;
-import com.example.order.dto.events.CustomerOrderDownloadEvent;
-import com.example.order.dto.events.OrderPlannedEvent;
-import com.example.order.dto.requests.CustomerOrderCreationRequestDTO;
-import com.example.order.dto.requests.OrderFulfillmentRequestDTO;
-import com.example.order.dto.responses.OrderFulfillmentResponseDTO;
-import com.example.picking.dto.events.LowPickEvent;
 import com.example.test.service.EventPublisher;
 
 import junit.framework.Assert;

@@ -1,13 +1,12 @@
 package com.test;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.time.DateUtils;
-import org.h2.util.StringUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,10 +14,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.stream.annotation.EnableBinding;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import com.example.customer.order.dto.events.CustomerOrderCreatedEvent;
+import com.example.customer.order.dto.requests.CustomerOrderCreationRequestDTO;
+import com.example.customer.order.dto.requests.CustomerOrderLineCreationRequestDTO;
 import com.example.inventory.dto.events.InventoryCreatedEvent;
-import com.example.order.dto.events.CustomerOrderCreatedEvent;
-import com.example.order.dto.requests.CustomerOrderCreationRequestDTO;
-import com.example.order.dto.requests.CustomerOrderLineCreationRequestDTO;
 import com.example.test.service.EventPublisher;
 
 @RunWith(SpringRunner.class)
@@ -54,9 +53,9 @@ public class CustomerOrderCreatorTest {
 				CustomerOrderLineCreationRequestDTO orderLine = new CustomerOrderLineCreationRequestDTO(line, upc, qty, qty, "", "");
 				orderLines.add(orderLine);
 			}
-			Date orderDttm = DateUtils.addDays(new java.util.Date(), 0);
-			Date shipDttm = DateUtils.addDays(orderDttm, 5);
-			Date deliveryDttm = DateUtils.addDays(shipDttm, 7);
+			LocalDateTime orderDttm = LocalDateTime.now();
+			LocalDateTime shipDttm = orderDttm.plusDays(5);
+			LocalDateTime deliveryDttm = orderDttm.plusDays(7);
 			String deliveryType=  RandomStringUtils.randomAlphabetic(2, 2);
 			CustomerOrderCreationRequestDTO orderReq = new CustomerOrderCreationRequestDTO("XYZ", 3456, "", "", "71", externalBatchNbr,
 					"F"+RandomStringUtils.random(9, false, true), orderDttm, shipDttm, deliveryDttm,deliveryType , false, "",
