@@ -1,4 +1,4 @@
-package com.test;
+package com.threedsoft.test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -13,22 +13,31 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JSR310Module;
+import com.threedsoft.util.dto.events.WMSEvent;
+
 
 public class EventReceiver {
 	Consumer consumer;
 	String topicName;
 	ObjectMapper mapper= null;
 
+	public ObjectMapper getMapper() {
+		if(mapper == null)
+			mapper = this.getObjectMapper();
+		return mapper;
+	}
 	public EventReceiver(String consumerGroup, String topicName) {
 		this.topicName = topicName;
 		mapper = this.getObjectMapper();
 		Properties props = new Properties();
 		props.put("bootstrap.servers", "192.168.56.1:29092");
 		//props.put("bootstrap.servers", "35.239.238.83:9092");
-		props.put("auto.create.topics.enable", "false");
+		//props.put("auto.create.topics.enable", "false");
 //		props.put("advertised.host.name", "35.239.238.83");
 //		props.put("advertised.listeners", "PLAINTEXT://35.239.238.83:9092");
 //		 props.put("sasl.jaas.config", "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"USER\" password=\"PASSWORD\";");
@@ -39,13 +48,17 @@ public class EventReceiver {
 //		 props.put("ssl.endpoint.identification.algorithm", "HTTPS");
 		props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
 		props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
-		props.put("spring.cloud.stream.kafka.bindings." + topicName + ".consumer.autoCommitOffset", false);
-		props.put("logging.level.org.apache.kafka","TRACE");
+		//props.put("value.deserializer", "org.springframework.kafka.support.serializer.JsonDeserializer");
+		//props.put("JsonDeserializer.VALUE_DEFAULT_TYPE", WMSEvent.class.getName());
+		
+		//props.put("spring.cloud.stream.kafka.bindings." + topicName + ".consumer.autoCommitOffset", false);
+		//props.put("logging.level.org.apache.kafka","TRACE");
 		//props.put("spring.cloud.stream.kafka.bindings." + topicName + "inventory-out.consumer.enable.auto.commit", false);
 		props.put("enable.auto.commit", false);
 		props.put("auto.commit.interval.ms", "1000");
 		props.put("group.id", consumerGroup);
 		consumer = new KafkaConsumer<>(props);
+		
 		//Collection<TopicPartition> topicPartitionList = null;
 		consumer.subscribe(Arrays.asList(topicName));
 		// consumer.poll(0);
@@ -103,41 +116,61 @@ public class EventReceiver {
 			.println("consumer, seeking position to :" + entry.getKey() + ": position:" + (consumer.position(entry.getKey())));
 
 		}*/
+		// clean up any old records
 		consumer.poll(2000);
+		ConsumerRecords<String, String> records;
+		int i = 0;
+		while ((records = consumer.poll(5000)).count() > 0) {
+			Iterator itr = records.iterator();
+			i++;
+			while (itr.hasNext()) {
+				ConsumerRecord record = (ConsumerRecord) itr.next();
+				consumer.commitSync();
+			}
+		}
+		System.out.println("Cleaned up:" + i + " records from topic:" + topicName);
+		
 		consumer.commitSync();
 	}
 
 	public <T> List<T> getEvent(Class<T> cls) throws Exception {
 		List<T> eventList = new ArrayList();
 		ConsumerRecords<String, String> records;
-		while ((records = consumer.poll(2000)).count() > 0) {
+		int i = 0;
+		int totalRecords = 0;
+		while ((records = consumer.poll(5000)).count() > 0) {
+			i++;
 			consumer.commitSync();
 			int recordCount = records.count();
 			System.out.println("count of records:" + recordCount);
 			ConsumerRecord record = null;
-			int i = 0;
 			Iterator itr = records.iterator();
 			while (itr.hasNext()) {
-				i++;
+				totalRecords++;
 				record = (ConsumerRecord) itr.next();
 				System.out.println("Event Receiver, record.value:" + record.value().toString());
 				T obj = (T) mapper.readValue(record.value().toString(), cls);
 				eventList.add(obj);
 				System.out.println("Event Receiver, received event:" + obj);
-				System.out.println("loop:" + i + ",record count:" + recordCount);
+				System.out.println("loop:" + i + ",record count:" + recordCount + ",totalRecords:" + totalRecords);
+				consumer.commitSync();
 			}
 		}
 		consumer.commitSync();
 		//consumer.commitSync();
-		System.out.println("count of records:" + eventList.size());
+		System.out.println("total count of records:" + eventList.size());
 		return eventList;
 	}
 	
-    public ObjectMapper getObjectMapper() {
-        return Jackson2ObjectMapperBuilder.json()
+    private ObjectMapper getObjectMapper() {
+        ObjectMapper mapper =  Jackson2ObjectMapperBuilder.json()
                 .serializationInclusion(JsonInclude.Include.NON_NULL) // Don’t include null values
                 .featuresToDisable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS) //ISODate
+                //.deserializers(JsonDeserializer<WMSEvent>.class)
                 .modules(new JSR310Module())
                 .build();
+		mapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
+		return mapper;
+
     }	
 }

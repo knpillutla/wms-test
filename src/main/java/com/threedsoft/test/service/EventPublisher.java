@@ -1,9 +1,10 @@
-package com.example.test.service;
+package com.threedsoft.test.service;
 
 import java.util.Map;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
+import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.support.MessageBuilder;
@@ -21,13 +22,15 @@ import lombok.extern.slf4j.Slf4j;
 public class EventPublisher {
 	public static void send(MessageChannel msgChannel, Object obj, Map headerMap) {
 		log.info("Sending Msg {}", obj);
-		log.info("Sending payload:{}", MessageBuilder.withPayload(obj));
+		
 		MessageHeaderAccessor msgHdrAccessor = new MessageHeaderAccessor();
 		msgHdrAccessor.copyHeadersIfAbsent(headerMap);
-		msgChannel.send(MessageBuilder.withPayload(obj)
-				.setHeader(MessageHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON)
-				.setHeaders(msgHdrAccessor)
-				.build());
+		Message msgObj = MessageBuilder.withPayload(obj)
+		.setHeader(MessageHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON)
+		.setHeaders(msgHdrAccessor)
+		.build();
+		log.info("Sending msg with headers and payload:{}", msgObj.getHeaders() + "," + msgObj.getPayload());
+		msgChannel.send(msgObj);
 		log.info("Completed Sending Msg {}", obj);
 	}
 	

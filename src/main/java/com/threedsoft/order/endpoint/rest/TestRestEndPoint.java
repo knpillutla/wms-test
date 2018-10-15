@@ -1,4 +1,4 @@
-package com.example.order.endpoint.rest;
+package com.threedsoft.order.endpoint.rest;
 
 import java.time.LocalDateTime;
 import java.util.Random;
@@ -11,8 +11,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import com.example.customer.order.dto.requests.CustomerOrderCreationRequestDTO;
-import com.example.test.service.EventPublisher;
+import com.threedsoft.customer.order.dto.requests.CustomerOrderCreationRequestDTO;
+import com.threedsoft.test.service.EventPublisher;
 
 import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;

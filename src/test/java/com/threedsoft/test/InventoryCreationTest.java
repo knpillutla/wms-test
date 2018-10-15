@@ -1,4 +1,4 @@
-package com.test;
+package com.threedsoft.test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,11 +10,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.stream.annotation.EnableBinding;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import com.example.customer.order.dto.events.CustomerOrderCreatedEvent;
-import com.example.inventory.dto.events.ASNUPCReceivedEvent;
-import com.example.inventory.dto.events.InventoryCreatedEvent;
-import com.example.inventory.dto.requests.InventoryCreationRequestDTO;
-import com.example.test.service.EventPublisher;
+import com.threedsoft.customer.order.dto.events.CustomerOrderCreatedEvent;
+import com.threedsoft.inventory.dto.events.InventoryCreatedEvent;
+import com.threedsoft.inventory.dto.events.InventoryReceivedEvent;
+import com.threedsoft.inventory.dto.requests.InventoryCreationRequestDTO;
+import com.threedsoft.test.service.EventPublisher;
 
 import junit.framework.Assert;
 
@@ -53,9 +53,7 @@ public class InventoryCreationTest {
 		List<InventoryCreationRequestDTO> invnCreationReqList = InventoryCreator
 				.createNewInventoryRecords(numOfOrders * numOfOrderLines);
 		for (InventoryCreationRequestDTO inventoryReq : invnCreationReqList) {
-			ASNUPCReceivedEvent upcReceivedEvent = new ASNUPCReceivedEvent(inventoryReq.getBusName(),
-					inventoryReq.getLocnNbr(), inventoryReq.getBusUnit(), inventoryReq.getItemBrcd(),
-					inventoryReq.getQty());
+			InventoryReceivedEvent upcReceivedEvent = new InventoryReceivedEvent(inventoryReq,"WMS-Inventory-Creation-TEST");
 			EventPublisher.send(wmsStreams.inboundInventory(), upcReceivedEvent, upcReceivedEvent.getHeaderMap());
 			List<InventoryCreatedEvent> inventoryEventList = inventoryEventReceiver
 					.getEvent(InventoryCreatedEvent.class);

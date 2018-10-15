@@ -1,5 +1,6 @@
-package com.test;
+package com.threedsoft.test;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,30 +16,35 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.RestTemplate;
 
-import com.example.customer.order.dto.events.CustomerOrderCreatedEvent;
-import com.example.customer.order.dto.events.CustomerOrderDownloadEvent;
-import com.example.customer.order.dto.requests.CustomerOrderCreationRequestDTO;
-import com.example.inventory.dto.events.ASNUPCReceivedEvent;
-import com.example.inventory.dto.events.InventoryAllocatedEvent;
-import com.example.inventory.dto.events.InventoryCreatedEvent;
-import com.example.inventory.dto.requests.InventoryCreationRequestDTO;
-import com.example.order.dto.events.OrderCreatedEvent;
-import com.example.order.dto.events.OrderPackedEvent;
-import com.example.order.dto.events.OrderPickedEvent;
-import com.example.order.dto.events.OrderPlannedEvent;
-import com.example.order.dto.requests.OrderFulfillmentRequestDTO;
-import com.example.order.dto.responses.OrderFulfillmentResponseDTO;
-import com.example.packing.dto.events.PackConfirmationEvent;
-import com.example.packing.dto.events.PackCreatedEvent;
-import com.example.packing.dto.requests.PackConfirmRequestDTO;
-import com.example.packing.dto.responses.PackDTO;
-import com.example.picking.dto.events.LowPickEvent;
-import com.example.picking.dto.events.PickConfirmationEvent;
-import com.example.picking.dto.events.PickCreatedEvent;
-import com.example.picking.dto.requests.PickConfirmRequestDTO;
-import com.example.picking.dto.responses.PickDTO;
-import com.example.shipping.dto.events.ShipRoutingCompletedEvent;
-import com.example.test.service.EventPublisher;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.threedsoft.customer.order.dto.events.CustomerOrderCreatedEvent;
+import com.threedsoft.customer.order.dto.events.CustomerOrderDownloadEvent;
+import com.threedsoft.customer.order.dto.requests.CustomerOrderCreationRequestDTO;
+import com.threedsoft.inventory.dto.events.InventoryAllocatedEvent;
+import com.threedsoft.inventory.dto.events.InventoryCreatedEvent;
+import com.threedsoft.inventory.dto.events.InventoryReceivedEvent;
+import com.threedsoft.inventory.dto.requests.InventoryCreationRequestDTO;
+import com.threedsoft.order.dto.events.OrderCreatedEvent;
+import com.threedsoft.order.dto.events.OrderPackedEvent;
+import com.threedsoft.order.dto.events.OrderPickedEvent;
+import com.threedsoft.order.dto.events.OrderPlannedEvent;
+import com.threedsoft.order.dto.requests.OrderFulfillmentRequestDTO;
+import com.threedsoft.order.dto.responses.OrderFulfillmentResourceDTO;
+import com.threedsoft.order.dto.responses.OrderResourceDTO;
+import com.threedsoft.packing.dto.events.PackConfirmationEvent;
+import com.threedsoft.packing.dto.events.PackCreatedEvent;
+import com.threedsoft.packing.dto.requests.PackConfirmRequestDTO;
+import com.threedsoft.packing.dto.responses.PackResourceDTO;
+import com.threedsoft.picking.dto.events.LowPickEvent;
+import com.threedsoft.picking.dto.events.PickConfirmationEvent;
+import com.threedsoft.picking.dto.events.PickCreatedEvent;
+import com.threedsoft.picking.dto.requests.PickConfirmRequestDTO;
+import com.threedsoft.picking.dto.responses.PickResourceDTO;
+import com.threedsoft.shipping.dto.events.ShipRoutingCompletedEvent;
+import com.threedsoft.test.service.EventPublisher;
+import com.threedsoft.util.dto.events.EventResourceConverter;
 
 import junit.framework.Assert;
 
@@ -46,6 +52,9 @@ import junit.framework.Assert;
 @SpringBootTest(properties = {
 		"spring.autoconfigure.exclude=org.springframework.cloud.stream.test.binder.TestSupportBinderAutoConfiguration",
 		"spring.kafka.consumer.value-deserializer=org.apache.kafka.common.serialization.StringDeserializer",
+		//"spring.kafka.consumer.value-deserializer=org.apache.kafka.common.serialization.JsonDeserializer",
+		//"spring.kafka.consumer.value-deserializer=org.springframework.kafka.support.serializer.JsonDeserializer",
+		//"spring.kafka.consumer.JsonDeserializer.VALUE_DEFAULT_TYPE=com.threedsoft.util.dto.events.WMSEvent",
 		// "spring.cloud.stream.bindings.inventory-in.producer.headerMode=none",
 		//"spring.cloud.stream.bindings.inventory-in.contentType=application/json",
 		//"spring.cloud.stream.bindings.inventory-in.group=wmsorder-invn-producer",
@@ -53,6 +62,10 @@ import junit.framework.Assert;
 		// "spring.cloud.stream.bindings.inventory-out.consumer.headerMode=none",
 		//"spring.cloud.stream.bindings.inventory-out.contentType=application/json",
 		// "spring.kafka.consumer.group-id=test",
+		//"spring.cloud.stream.default.consumer.headerMode=raw",
+		//"spring.cloud.stream.default.producer.headerMode=raw",
+		//"spring.cloud.stream.kafka.binder.headers[0]=eventName",
+		"spring.cloud.stream.kafka.binder.headers=eventName",
 		"spring.cloud.stream.kafka.binder.auto-create-topics=false",
 		"spring.cloud.stream.kafka.binder.brokers=localhost:29092",
 		"spring.jackson.serialization.WRITE_DATES_AS_TIMESTAMPS=false",},
@@ -62,7 +75,7 @@ import junit.framework.Assert;
 		classes = { EventPublisher.class,
 				WMSStreams.class }, webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @EnableBinding(WMSStreams.class)
-public class WareshouseCustomerOrderInventoryCreationTest {
+public class WarehouseCustomerOrderInventoryCreationTest {
 	@Autowired
 	WMSStreams wmsStreams;
 	List<InventoryCreatedEvent> invnCreatedEventList = new ArrayList();
@@ -81,7 +94,15 @@ public class WareshouseCustomerOrderInventoryCreationTest {
 	String customerOrderServiceHost = "localhost";
 	String shippingServiceHost = "localhost";
 
-
+	EventReceiver custOrderEventReceiver = new EventReceiver("whse-customerOrder-consumer",
+			wmsStreams.CUSTOMER_ORDERS_OUTPUT);
+	EventReceiver inventoryEventReceiver = new EventReceiver("whse-inventory-consumer",
+			wmsStreams.INVENTORY_OUTPUT);
+	EventReceiver orderEventReceiver = new EventReceiver("whse-order-consumer", wmsStreams.ORDERS_OUTPUT);
+	EventReceiver pickEventReceiver = new EventReceiver("whse-pick-consumer", wmsStreams.PICK_OUTPUT);
+	EventReceiver packEventReceiver = new EventReceiver("whse-pack-consumer", wmsStreams.PACK_OUTPUT);
+	EventReceiver shipEventReceiver = new EventReceiver("whse-ship-consumer", wmsStreams.SHIP_OUTPUT);
+	String SERVICE_NAME="WMSWarehouseEndToEndTest";
 	// gcp ports
 /*	String configPort = "32444";
 	String customerOrderPort = "32445";
@@ -117,23 +138,14 @@ public class WareshouseCustomerOrderInventoryCreationTest {
 		String company = "IE";
 		String division = "09";
 		String userId = "Krishna";
-		int numOfOrders = 20;
+		int numOfOrders = 5;
 		int numOfOrderLines = 1; // num of order lines
-		EventReceiver custOrderEventReceiver = new EventReceiver("whse-customerOrder-consumer",
-				wmsStreams.CUSTOMER_ORDERS_OUTPUT);
-		EventReceiver inventoryEventReceiver = new EventReceiver("whse-inventory-consumer",
-				wmsStreams.INVENTORY_OUTPUT);
-		EventReceiver orderEventReceiver = new EventReceiver("whse-order-consumer", wmsStreams.ORDERS_OUTPUT);
-		EventReceiver pickEventReceiver = new EventReceiver("whse-pick-consumer", wmsStreams.PICK_OUTPUT);
-		EventReceiver packEventReceiver = new EventReceiver("whse-pack-consumer", wmsStreams.PACK_OUTPUT);
-		EventReceiver shipEventReceiver = new EventReceiver("whse-ship-consumer", wmsStreams.SHIP_OUTPUT);
+		int numOfOrdersPerBatch = 1;
 
 		List<InventoryCreationRequestDTO> invnCreationReqList = InventoryCreator
 				.createNewInventoryRecords(numOfOrders * numOfOrderLines);
 		for (InventoryCreationRequestDTO inventoryReq : invnCreationReqList) {
-			ASNUPCReceivedEvent upcReceivedEvent = new ASNUPCReceivedEvent(inventoryReq.getBusName(),
-					inventoryReq.getLocnNbr(), inventoryReq.getBusUnit(), inventoryReq.getItemBrcd(),
-					inventoryReq.getQty());
+			InventoryReceivedEvent upcReceivedEvent = new InventoryReceivedEvent(inventoryReq,SERVICE_NAME);
 			EventPublisher.send(wmsStreams.inboundInventory(), upcReceivedEvent, upcReceivedEvent.getHeaderMap());
 		}
 		invnCreatedEventList.addAll(inventoryEventReceiver.getEvent(InventoryCreatedEvent.class));
@@ -143,7 +155,7 @@ public class WareshouseCustomerOrderInventoryCreationTest {
 		List<CustomerOrderCreationRequestDTO> orderCreationReqList = CustomerOrderCreator
 				.createNewCustomerOrders(invnCreatedEventList, numOfOrders, numOfOrderLines);
 		for (CustomerOrderCreationRequestDTO orderCreationReq : orderCreationReqList) {
-			CustomerOrderDownloadEvent orderDloadEvent = new CustomerOrderDownloadEvent(orderCreationReq);
+			CustomerOrderDownloadEvent orderDloadEvent = new CustomerOrderDownloadEvent(orderCreationReq,SERVICE_NAME);
 			EventPublisher.send(wmsStreams.inboundCustomerOrders(), orderDloadEvent, orderDloadEvent.getHeaderMap());
 		}
 		customerOrderCreatedEventList.addAll(custOrderEventReceiver.getEvent(CustomerOrderCreatedEvent.class));
@@ -154,9 +166,8 @@ public class WareshouseCustomerOrderInventoryCreationTest {
 
 
 		// plan order fulfillment
-		int MaxNumOfOrdersInBatch = 5;
 		List<String> batchNbrList = invokeOrderFulfillmentForWarehouse(busName, locnNbr, company, division, busUnit,
-				RandomStringUtils.random(6, true, false), numOfOrders, MaxNumOfOrdersInBatch, orderEventList);
+				RandomStringUtils.random(6, true, false), numOfOrders, orderEventList, numOfOrdersPerBatch);
 
 		// this will be two events, order planned and order allocated.somehow, both orderplanned and order allocated are treated same as the json structure is same
 		List<OrderPlannedEvent> orderPlannedEventList = orderEventReceiver.getEvent(OrderPlannedEvent.class);
@@ -209,7 +220,7 @@ public class WareshouseCustomerOrderInventoryCreationTest {
 		List<OrderPackedEvent> orderPackedEventList = orderEventReceiver.getEvent(OrderPackedEvent.class);
 		Assert.assertEquals(numOfOrders, orderPackedEventList.size());
 	}
-
+/*
 	// @Test
 	public void createLowPickEvent() throws Exception {
 		// create low pick event to start order fulfillment
@@ -221,10 +232,10 @@ public class WareshouseCustomerOrderInventoryCreationTest {
 		System.out.println("Orders Planned Created....");
 		Assert.assertEquals(1, orderPlannedEventList.size());
 	}
-
+*/
 	public List<String> invokeOrderFulfillmentForWarehouse(String busName, Integer locnNbr, String company,
-			String division, String busUnit, String userId, int numOfOrders, int maxNumOfOrdersInBatch,
-			List<OrderCreatedEvent> orderCreatedEventList) {
+			String division, String busUnit, String userId, int numOfOrders,
+			List<OrderCreatedEvent> orderCreatedEventList, int numOfOrdersPerBatch) throws JsonParseException, JsonMappingException, IOException {
 		List<String> batchNbrList = new ArrayList();
 
 		int currentOrderCount = 0;
@@ -233,9 +244,12 @@ public class WareshouseCustomerOrderInventoryCreationTest {
 		RestTemplate restTemplate = new RestTemplate();
 		for (int i = 0; i < orderCreatedEventList.size(); i++) {
 			OrderCreatedEvent orderCreatedEvent = orderCreatedEventList.get(i);
-			orderIdList.add(orderCreatedEvent.getOrderDTO().getId());
+			OrderResourceDTO orderDTOObj = (OrderResourceDTO) EventResourceConverter
+					.getObject(orderCreatedEvent.getEventResource(), orderCreatedEvent.getEventResourceClassName());
+			orderIdList.add(orderDTOObj.getId());
+			
 			currentOrderCount++;
-			if (currentOrderCount >= 5 || ((i + 1) == orderCreatedEventList.size())) {
+			if (currentOrderCount >= numOfOrdersPerBatch || ((i + 1) == orderCreatedEventList.size())) {
 				currentOrderCount = 0;
 				OrderFulfillmentRequestDTO orderFulfillmentReq = new OrderFulfillmentRequestDTO();
 				orderFulfillmentReq.setBusName(busName);
@@ -245,11 +259,11 @@ public class WareshouseCustomerOrderInventoryCreationTest {
 				orderFulfillmentReq.setBusUnit(busUnit);
 				orderFulfillmentReq.setWarehouseMode(true);
 				orderFulfillmentReq.setOrderIdList(orderIdList);
-				String orderPlannerPlanOrderURL = "http://"+orderPlannerServiceHost + ":" + orderPlannerPort + "/orders/v1/" + busName + "/" + locnNbr;
+				String orderPlannerPlanOrderURL = "http://"+orderPlannerServiceHost + ":" + orderPlannerPort + "/orderplanner/v1/" + busName + "/" + locnNbr;
 				System.out.println("order planner plan order url:" + orderPlannerPlanOrderURL);
-				OrderFulfillmentResponseDTO response = restTemplate.postForObject(
+				OrderFulfillmentResourceDTO response = restTemplate.postForObject(
 						orderPlannerPlanOrderURL,
-						orderFulfillmentReq, OrderFulfillmentResponseDTO.class);
+						orderFulfillmentReq, OrderFulfillmentResourceDTO.class);
 				batchNbr = response.getBatchNbr();
 				System.out.println("batch nbr from start order fulfillment:" + batchNbr);
 				batchNbrList.add(batchNbr);
@@ -273,7 +287,7 @@ public class WareshouseCustomerOrderInventoryCreationTest {
 			String pickAssignURL = "http://" + pickingServiceHost + ":" + pickingPort + "/picking/v1/" + busName + "/" + locnNbr
 					+ "/picks/next/" + batchNbr + "/" + userId;
 			System.out.println("pick assign url:" + pickAssignURL);
-			PickDTO pickDTO = restTemplate.postForObject(pickAssignURL, null, PickDTO.class);
+			PickResourceDTO pickDTO = restTemplate.postForObject(pickAssignURL, null, PickResourceDTO.class);
 			System.out.println("next pick:" + pickDTO);
 			toteList.add(containerNbr); // create one tote per container to start with, later we can add tote capacity
 			while (pickDTO != null) {
@@ -286,10 +300,10 @@ public class WareshouseCustomerOrderInventoryCreationTest {
 				String pickConfirmURL = "http://" + pickingServiceHost + ":" + pickingPort + "/picking/v1/" + busName + "/" + locnNbr
 						+ "/picks/" + pickDTO.getId();
 				System.out.println("pick confirm url:" + pickConfirmURL);
-				PickDTO pickConfirmDTO = restTemplate.postForObject(pickConfirmURL, pickConfirmObj, PickDTO.class);
+				PickResourceDTO pickConfirmDTO = restTemplate.postForObject(pickConfirmURL, pickConfirmObj, PickResourceDTO.class);
 				System.out.println("Pick Confirm Reponse:" + pickConfirmDTO);
 				try {
-					pickDTO = restTemplate.postForObject(pickAssignURL, null, PickDTO.class);
+					pickDTO = restTemplate.postForObject(pickAssignURL, null, PickResourceDTO.class);
 					System.out.println("next pick:" + pickDTO);
 				} catch (Exception ex) {
 					ex.printStackTrace();
@@ -312,14 +326,14 @@ public class WareshouseCustomerOrderInventoryCreationTest {
 			System.out.println("pack getpacks url:" + packsGETURL);
 			// List<PackDTO> packDTOList = restTemplate.getForObject(packsGETURL,
 			// List.class);
-			ResponseEntity<List<PackDTO>> response = restTemplate.exchange(packsGETURL, HttpMethod.GET, null,
-					new ParameterizedTypeReference<List<PackDTO>>() {
+			ResponseEntity<List<PackResourceDTO>> response = restTemplate.exchange(packsGETURL, HttpMethod.GET, null,
+					new ParameterizedTypeReference<List<PackResourceDTO>>() {
 					});
-			List<PackDTO> packDTOList = response.getBody();
+			List<PackResourceDTO> packDTOList = response.getBody();
 
 			System.out.println("pack getpacks response:" + packDTOList);
 			for (int i = 0; i < packDTOList.size(); i++) {
-				PackDTO packDTO = packDTOList.get(i);
+				PackResourceDTO packDTO = packDTOList.get(i);
 				// pack confirm
 				PackConfirmRequestDTO packConfirmObj = new PackConfirmRequestDTO(packDTO.getId(), packDTO.getOrderId(),
 						packDTO.getBatchNbr(), packDTO.getBusName(), packDTO.getLocnNbr(), packDTO.getBusUnit(),
@@ -328,7 +342,7 @@ public class WareshouseCustomerOrderInventoryCreationTest {
 				String packConfirmURL = "http://" + packingServiceHost + ":" + packingPort + "/packing/v1/" + busName + "/" + locnNbr
 						+ "/packs/" + packDTO.getId();
 				System.out.println("pack confirm url:" + packConfirmURL);
-				PackDTO pickConfirmDTO = restTemplate.postForObject(packConfirmURL, packConfirmObj, PackDTO.class);
+				PackResourceDTO pickConfirmDTO = restTemplate.postForObject(packConfirmURL, packConfirmObj, PackResourceDTO.class);
 				System.out.println("Pack Confirm Reponse:" + pickConfirmDTO);
 			}
 		}

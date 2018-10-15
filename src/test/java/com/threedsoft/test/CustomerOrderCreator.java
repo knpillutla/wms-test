@@ -1,4 +1,4 @@
-package com.test;
+package com.threedsoft.test;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -9,10 +9,11 @@ import java.util.Random;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 
-import com.example.customer.order.dto.requests.CustomerOrderCreationRequestDTO;
-import com.example.customer.order.dto.requests.CustomerOrderLineCreationRequestDTO;
-import com.example.inventory.dto.events.InventoryCreatedEvent;
-import com.example.inventory.dto.responses.InventoryDTO;
+import com.threedsoft.customer.order.dto.requests.CustomerOrderCreationRequestDTO;
+import com.threedsoft.customer.order.dto.requests.CustomerOrderLineCreationRequestDTO;
+import com.threedsoft.inventory.dto.events.InventoryCreatedEvent;
+import com.threedsoft.inventory.dto.responses.InventoryResourceDTO;
+import com.threedsoft.order.dto.responses.OrderResourceDTO;
 public class CustomerOrderCreator {
 	public static List<CustomerOrderCreationRequestDTO> createNewCustomerOrders(List<InventoryCreatedEvent> invnEventCreatedList, int numOfOrders, int numOfOrderLines ) throws Exception {
 		//EventReceiver receiver = new EventReceiver("wmsinventorycreator-consumer", "orders-out");
@@ -24,7 +25,11 @@ public class CustomerOrderCreator {
 			for (int line = 1; line <= numOfOrderLines; line++) {
 				Random rand = new Random();
 				InventoryCreatedEvent invnCreatedEvent = invnIterator.next();
-				InventoryDTO invnResponseResource = invnCreatedEvent.getInventoryDTO();
+//				OrderResourceDTO orderDTOObj = (OrderResourceDTO) orderEventReceiver.getMapper().
+//						convertValue(orderCreatedEvent.getEventResource(), OrderResourceDTO.class);
+
+				//InventoryResourceDTO invnResponseResource = (InventoryResourceDTO) invnCreatedEvent.getEventResource();
+				InventoryResourceDTO invnResponseResource = EventResourceConverter.getObject(invnCreatedEvent.getEventResource(), InventoryResourceDTO.class);
 				String upc = invnResponseResource.getItemBrcd();//RandomStringUtils.random(20, false, true);
 				Integer qty = invnResponseResource.getQty();//rand.nextInt(9);
 				CustomerOrderLineCreationRequestDTO orderLine = new CustomerOrderLineCreationRequestDTO(line, upc, qty, qty, "", "");

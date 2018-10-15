@@ -1,4 +1,4 @@
-package com.test;
+package com.threedsoft.test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,13 +10,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.stream.annotation.EnableBinding;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import com.example.customer.order.dto.events.CustomerOrderCreatedEvent;
-import com.example.customer.order.dto.events.CustomerOrderDownloadEvent;
-import com.example.customer.order.dto.requests.CustomerOrderCreationRequestDTO;
-import com.example.inventory.dto.events.ASNUPCReceivedEvent;
-import com.example.inventory.dto.events.InventoryCreatedEvent;
-import com.example.inventory.dto.requests.InventoryCreationRequestDTO;
-import com.example.test.service.EventPublisher;
+import com.threedsoft.customer.order.dto.events.CustomerOrderCreatedEvent;
+import com.threedsoft.customer.order.dto.events.CustomerOrderDownloadEvent;
+import com.threedsoft.customer.order.dto.requests.CustomerOrderCreationRequestDTO;
+import com.threedsoft.inventory.dto.events.InventoryCreatedEvent;
+import com.threedsoft.inventory.dto.events.InventoryReceivedEvent;
+import com.threedsoft.inventory.dto.requests.InventoryCreationRequestDTO;
+import com.threedsoft.test.service.EventPublisher;
 
 import junit.framework.Assert;
 
@@ -34,7 +34,7 @@ import junit.framework.Assert;
 		"spring.cloud.stream.kafka.binder.brokers=localhost:29092" }, classes = { EventPublisher.class,
 				WMSStreams.class }, webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @EnableBinding(WMSStreams.class)
-public class WareshouseCustomerOrderCreationTest {
+public class WarehouseCustomerOrderCreationTest {
 	@Autowired
 	WMSStreams wmsStreams;
 	List<InventoryCreatedEvent> invnCreatedEventList = new ArrayList();
@@ -46,6 +46,7 @@ public class WareshouseCustomerOrderCreationTest {
 	String pickingPort = "9013";
 	String packingPort = "9014";
 	String shippingPort = "9015";
+	String SERVICE_NAME="WarehouseCustomerOrderCreationTest";
 	
 	@Test
 	public void createInventoryAndCustomerOrdersOneOrdeLinePerCustomerOrder() throws Exception {
@@ -65,9 +66,7 @@ public class WareshouseCustomerOrderCreationTest {
 		List<InventoryCreationRequestDTO> invnCreationReqList = InventoryCreator
 				.createNewInventoryRecords(numOfOrders * numOfOrderLines);
 		for (InventoryCreationRequestDTO inventoryReq : invnCreationReqList) {
-			ASNUPCReceivedEvent upcReceivedEvent = new ASNUPCReceivedEvent(inventoryReq.getBusName(),
-					inventoryReq.getLocnNbr(), inventoryReq.getBusUnit(), inventoryReq.getItemBrcd(),
-					inventoryReq.getQty());
+			InventoryReceivedEvent upcReceivedEvent = new InventoryReceivedEvent(inventoryReq,SERVICE_NAME);
 			EventPublisher.send(wmsStreams.inboundInventory(), upcReceivedEvent, upcReceivedEvent.getHeaderMap());
 			List<InventoryCreatedEvent> inventoryEventList = inventoryEventReceiver
 					.getEvent(InventoryCreatedEvent.class);
@@ -80,7 +79,7 @@ public class WareshouseCustomerOrderCreationTest {
 				.createNewCustomerOrders(invnCreatedEventList, numOfOrders, numOfOrderLines);
 
 		for (CustomerOrderCreationRequestDTO orderCreationReq : orderCreationReqList) {
-			CustomerOrderDownloadEvent orderDloadEvent = new CustomerOrderDownloadEvent(orderCreationReq);
+			CustomerOrderDownloadEvent orderDloadEvent = new CustomerOrderDownloadEvent(orderCreationReq, SERVICE_NAME);
 			EventPublisher.send(wmsStreams.inboundCustomerOrders(), orderDloadEvent, orderDloadEvent.getHeaderMap());
 			List<CustomerOrderCreatedEvent> tmpCustomerOrderEventList = custOrderEventReceiver
 					.getEvent(CustomerOrderCreatedEvent.class);

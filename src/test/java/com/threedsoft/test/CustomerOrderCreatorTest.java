@@ -1,4 +1,4 @@
-package com.test;
+package com.threedsoft.test;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -14,11 +14,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.stream.annotation.EnableBinding;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import com.example.customer.order.dto.events.CustomerOrderCreatedEvent;
-import com.example.customer.order.dto.requests.CustomerOrderCreationRequestDTO;
-import com.example.customer.order.dto.requests.CustomerOrderLineCreationRequestDTO;
-import com.example.inventory.dto.events.InventoryCreatedEvent;
-import com.example.test.service.EventPublisher;
+import com.threedsoft.customer.order.dto.events.CustomerOrderCreatedEvent;
+import com.threedsoft.customer.order.dto.requests.CustomerOrderCreationRequestDTO;
+import com.threedsoft.customer.order.dto.requests.CustomerOrderLineCreationRequestDTO;
+import com.threedsoft.inventory.dto.events.InventoryCreatedEvent;
+import com.threedsoft.test.service.EventPublisher;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(properties = {

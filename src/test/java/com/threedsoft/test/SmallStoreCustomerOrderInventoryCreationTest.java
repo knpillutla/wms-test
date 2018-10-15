@@ -1,4 +1,4 @@
-package com.test;
+package com.threedsoft.test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,17 +12,17 @@ import org.springframework.cloud.stream.annotation.EnableBinding;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.RestTemplate;
 
-import com.example.customer.order.dto.events.CustomerOrderCreatedEvent;
-import com.example.customer.order.dto.events.CustomerOrderDownloadEvent;
-import com.example.customer.order.dto.requests.CustomerOrderCreationRequestDTO;
-import com.example.inventory.dto.events.ASNUPCReceivedEvent;
-import com.example.inventory.dto.events.InventoryCreatedEvent;
-import com.example.inventory.dto.requests.InventoryCreationRequestDTO;
-import com.example.order.dto.events.OrderPlannedEvent;
-import com.example.order.dto.requests.OrderFulfillmentRequestDTO;
-import com.example.order.dto.responses.OrderFulfillmentResponseDTO;
-import com.example.picking.dto.events.LowPickEvent;
-import com.example.test.service.EventPublisher;
+import com.threedsoft.customer.order.dto.events.CustomerOrderCreatedEvent;
+import com.threedsoft.customer.order.dto.events.CustomerOrderDownloadEvent;
+import com.threedsoft.customer.order.dto.requests.CustomerOrderCreationRequestDTO;
+import com.threedsoft.inventory.dto.events.InventoryCreatedEvent;
+import com.threedsoft.inventory.dto.events.InventoryReceivedEvent;
+import com.threedsoft.inventory.dto.requests.InventoryCreationRequestDTO;
+import com.threedsoft.order.dto.events.OrderPlannedEvent;
+import com.threedsoft.order.dto.requests.OrderFulfillmentRequestDTO;
+import com.threedsoft.order.dto.responses.OrderFulfillmentResourceDTO;
+import com.threedsoft.picking.dto.events.LowPickEvent;
+import com.threedsoft.test.service.EventPublisher;
 
 import junit.framework.Assert;
 
@@ -45,7 +45,7 @@ public class SmallStoreCustomerOrderInventoryCreationTest {
 	WMSStreams wmsStreams;
 	List<InventoryCreatedEvent> invnCreatedEventList = new ArrayList();
 	List<CustomerOrderCreatedEvent> orderCreatedEventList = new ArrayList();
-
+	String SMALL_STORE_SERVICE_NAME="SmallStoreTest";
 	@Test
 	public void createInventoryAndCustomerOrdersOneOrdeLinePerCustomerOrder() throws Exception {
 		String busName = "XYZ";
@@ -61,9 +61,7 @@ public class SmallStoreCustomerOrderInventoryCreationTest {
 		List<InventoryCreationRequestDTO> invnCreationReqList = InventoryCreator
 				.createNewInventoryRecords(numOfOrders * numOfOrderLines);
 		for (InventoryCreationRequestDTO inventoryReq : invnCreationReqList) {
-			ASNUPCReceivedEvent upcReceivedEvent = new ASNUPCReceivedEvent(inventoryReq.getBusName(),
-					inventoryReq.getLocnNbr(), inventoryReq.getBusUnit(), inventoryReq.getItemBrcd(),
-					inventoryReq.getQty());
+			InventoryReceivedEvent upcReceivedEvent = new InventoryReceivedEvent(inventoryReq,SMALL_STORE_SERVICE_NAME);
 			EventPublisher.send(wmsStreams.inboundInventory(), upcReceivedEvent, upcReceivedEvent.getHeaderMap());
 			List<InventoryCreatedEvent> inventoryEventList = inventoryEventReceiver
 					.getEvent(InventoryCreatedEvent.class);
@@ -77,7 +75,7 @@ public class SmallStoreCustomerOrderInventoryCreationTest {
 		List<CustomerOrderCreationRequestDTO> orderCreationReqList = CustomerOrderCreator
 				.createNewCustomerOrders(invnCreatedEventList, numOfOrders, numOfOrderLines);
 		for (CustomerOrderCreationRequestDTO orderCreationReq : orderCreationReqList) {
-			CustomerOrderDownloadEvent orderDloadEvent = new CustomerOrderDownloadEvent(orderCreationReq);
+			CustomerOrderDownloadEvent orderDloadEvent = new CustomerOrderDownloadEvent(orderCreationReq, SMALL_STORE_SERVICE_NAME);
 			EventPublisher.send(wmsStreams.inboundCustomerOrders(), orderDloadEvent, orderDloadEvent.getHeaderMap());
 			List<CustomerOrderCreatedEvent> orderEventList = orderEventReceiver
 					.getEvent(CustomerOrderCreatedEvent.class);
@@ -100,17 +98,6 @@ public class SmallStoreCustomerOrderInventoryCreationTest {
 		 */
 	}
 
-	// @Test
-	public void createLowPickEvent() throws Exception {
-		// create low pick event to start order fulfillment
-		EventReceiver orderPlannedEventReceiver = new EventReceiver("ss-ordercreator-consumer", wmsStreams.ORDERS_OUTPUT);
-		LowPickEvent lowPickEvent = new LowPickEvent("XYZ", 3456, "71", "", "", "", "", "");
-		EventPublisher.send(wmsStreams.outboundPick(), lowPickEvent, lowPickEvent.getHeaderMap());
-		List<OrderPlannedEvent> orderPlannedEventList = orderPlannedEventReceiver.getEvent(OrderPlannedEvent.class);
-		System.out.println("Orders Planned Created....");
-		Assert.assertEquals(1, orderPlannedEventList.size());
-	}
-
 	public void invokeOrderFulfillmentForSmallStore(String busName, Integer locnNbr, String company, String division,
 			String busUnit, String userId, int numOfOrdersInBatch) {
 		OrderFulfillmentRequestDTO orderFulfillmentReq = new OrderFulfillmentRequestDTO();
@@ -122,9 +109,9 @@ public class SmallStoreCustomerOrderInventoryCreationTest {
 		orderFulfillmentReq.setSmallStoreMode(true);
 		orderFulfillmentReq.setNumOfOrders(numOfOrdersInBatch);
 		RestTemplate restTemplate = new RestTemplate();
-		OrderFulfillmentResponseDTO response = restTemplate.postForObject(
+		OrderFulfillmentResourceDTO response = restTemplate.postForObject(
 				"http://localhost:9296/orders/v1/" + busName + "/" + locnNbr, orderFulfillmentReq,
-				OrderFulfillmentResponseDTO.class);
+				OrderFulfillmentResourceDTO.class);
 		System.out.println("rest response:" + response);
 	}
 

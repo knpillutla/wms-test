@@ -1,4 +1,4 @@
-package com.example.test;
+package com.threedsoft.test;
 
 import static net.logstash.logback.marker.Markers.appendEntries;
 
