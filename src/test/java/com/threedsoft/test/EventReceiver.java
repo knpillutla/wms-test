@@ -35,11 +35,9 @@ public class EventReceiver {
 		this.topicName = topicName;
 		mapper = this.getObjectMapper();
 		Properties props = new Properties();
-		props.put("bootstrap.servers", "192.168.56.1:29092");
-		//props.put("bootstrap.servers", "35.239.238.83:9092");
+		//props.put("bootstrap.servers", "192.168.56.1:29092");
+		props.put("bootstrap.servers", "35.236.200.183:9092");
 		//props.put("auto.create.topics.enable", "false");
-//		props.put("advertised.host.name", "35.239.238.83");
-//		props.put("advertised.listeners", "PLAINTEXT://35.239.238.83:9092");
 //		 props.put("sasl.jaas.config", "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"USER\" password=\"PASSWORD\";");
 //		 props.put("security.protocol", "SASL_SSL");
 //		 props.put("sasl.mechanism", "PLAIN");

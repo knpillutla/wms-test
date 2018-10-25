@@ -3,6 +3,7 @@ package com.threedsoft.test;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Test;
@@ -17,7 +18,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.threedsoft.customer.order.dto.events.CustomerOrderCreatedEvent;
 import com.threedsoft.customer.order.dto.events.CustomerOrderDownloadEvent;
@@ -37,13 +37,14 @@ import com.threedsoft.packing.dto.events.PackConfirmationEvent;
 import com.threedsoft.packing.dto.events.PackCreatedEvent;
 import com.threedsoft.packing.dto.requests.PackConfirmRequestDTO;
 import com.threedsoft.packing.dto.responses.PackResourceDTO;
-import com.threedsoft.picking.dto.events.LowPickEvent;
 import com.threedsoft.picking.dto.events.PickConfirmationEvent;
 import com.threedsoft.picking.dto.events.PickCreatedEvent;
 import com.threedsoft.picking.dto.requests.PickConfirmRequestDTO;
 import com.threedsoft.picking.dto.responses.PickResourceDTO;
 import com.threedsoft.shipping.dto.events.ShipRoutingCompletedEvent;
 import com.threedsoft.test.service.EventPublisher;
+import com.threedsoft.user.dto.requests.UserCreationRequestDTO;
+import com.threedsoft.user.dto.responses.UserResourceDTO;
 import com.threedsoft.util.dto.events.EventResourceConverter;
 
 import junit.framework.Assert;
@@ -67,11 +68,9 @@ import junit.framework.Assert;
 		//"spring.cloud.stream.kafka.binder.headers[0]=eventName",
 		"spring.cloud.stream.kafka.binder.headers=eventName",
 		"spring.cloud.stream.kafka.binder.auto-create-topics=false",
-		"spring.cloud.stream.kafka.binder.brokers=localhost:29092",
-		"spring.jackson.serialization.WRITE_DATES_AS_TIMESTAMPS=false",},
-//"spring.cloud.stream.kafka.binder.brokers=35.239.238.83:9092"},
-//		"advertised.host.name", "35.239.238.83",
-//		"spring.cloud.stream.kafka.binder.zkNodes=35.239.238.83:2181"},
+		//"spring.cloud.stream.kafka.binder.brokers=localhost:29092",
+		"spring.jackson.serialization.WRITE_DATES_AS_TIMESTAMPS=false",
+		"spring.cloud.stream.kafka.binder.brokers=35.236.200.183:9092"},
 		classes = { EventPublisher.class,
 				WMSStreams.class }, webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @EnableBinding(WMSStreams.class)
@@ -81,18 +80,7 @@ public class WarehouseCustomerOrderInventoryCreationTest {
 	List<InventoryCreatedEvent> invnCreatedEventList = new ArrayList();
 	List<CustomerOrderCreatedEvent> customerOrderCreatedEventList = new ArrayList();
 
-	String customerOrderPort = "9010";
-	String orderPlannerPort = "9011";
-	String inventoryPort = "9012";
-	String pickingPort = "9013";
-	String packingPort = "9014";
-	String shippingPort = "9015";
-	String orderPlannerServiceHost = "localhost";
-	String pickingServiceHost = "localhost";
-	String packingServiceHost = "localhost";
-	String inventoryServiceHost = "localhost";
-	String customerOrderServiceHost = "localhost";
-	String shippingServiceHost = "localhost";
+
 
 	EventReceiver custOrderEventReceiver = new EventReceiver("whse-customerOrder-consumer",
 			wmsStreams.CUSTOMER_ORDERS_OUTPUT);
@@ -103,33 +91,92 @@ public class WarehouseCustomerOrderInventoryCreationTest {
 	EventReceiver packEventReceiver = new EventReceiver("whse-pack-consumer", wmsStreams.PACK_OUTPUT);
 	EventReceiver shipEventReceiver = new EventReceiver("whse-ship-consumer", wmsStreams.SHIP_OUTPUT);
 	String SERVICE_NAME="WMSWarehouseEndToEndTest";
+	static {
+	    //for localhost testing only for https
+	    javax.net.ssl.HttpsURLConnection.setDefaultHostnameVerifier(
+	    new javax.net.ssl.HostnameVerifier(){
+
+	        public boolean verify(String hostname,
+	                javax.net.ssl.SSLSession sslSession) {
+	            if (hostname.equals("localhost")) {
+	                return true;
+	            }
+	            return true;
+	        }
+	    });
+	}	
+	
+	String customerOrderPort = "9010";
+	String orderPlannerPort = "9011";
+	String inventoryPort = "9012";
+	String pickingPort = "9013";
+	String packingPort = "9014";
+	String shippingPort = "9015";
+	String userPort = "9016";
+	String orderPlannerServiceHost = "localhost";
+	String pickingServiceHost = "localhost";
+	String packingServiceHost = "localhost";
+	String inventoryServiceHost = "localhost";
+	String customerOrderServiceHost = "localhost";
+	String shippingServiceHost = "localhost";
+	String userServiceHost = "localhost";
+	
 	// gcp ports
-/*	String configPort = "32444";
-	String customerOrderPort = "32445";
-	String inventoryPort = "32446";
-	String orderPlannerPort = "32447";
-	String packingPort = "32448";
-	String pickingPort = "32449";
-	String shippingPort = "32450";
-	String orderPlannerServiceHost = "35.236.220.119";
-	String pickingServiceHost = "35.230.187.200";
-	String packingServiceHost = "35.221.59.200";
-	String inventoryServiceHost = "35.236.201.110";
-	String customerOrderServiceHost = "35.221.38.104";
-	String shippingServiceHost = "35.221.46.27";*/
-/*	String configPort = "8888";
+//	String configPort = "32444";
+//	String customerOrderPort = "32445";
+//	String inventoryPort = "32446";
+//	String orderPlannerPort = "32447";
+//	String packingPort = "32448";
+//	String pickingPort = "32449";
+//	String shippingPort = "32450";
+//	String eventMonitorPort = "32450";
+/*	String orderPlannerServiceHost = "35.199.63.160";
+	String pickingServiceHost = "35.199.12.39";
+	String packingServiceHost = "35.221.48.211";
+	String inventoryServiceHost = "35.236.242.255";
+	String customerOrderServiceHost = "35.221.7.15";
+	String shippingServiceHost = "35.221.46.27";
+	String eventMonitorServiceHost = "35.221.46.27";
+	String userServiceHost = "35.221.78.28";
+	String configPort = "8888";
 	String customerOrderPort = "8080";
 	String inventoryPort = "8080";
 	String orderPlannerPort = "8080";
 	String packingPort = "8080";
 	String pickingPort = "8080";
 	String shippingPort = "8080";
-	String orderPlannerServiceHost = "35.236.220.119";
-	String pickingServiceHost = "35.230.187.200";
-	String packingServiceHost = "35.221.59.200";
-	String inventoryServiceHost = "35.236.201.110";
-	String customerOrderServiceHost = "35.221.38.104";
-	String shippingServiceHost = "35.221.46.27";*/
+	String userPort = "8080";*/
+	
+	@Test
+	public void createUser() {
+		RestTemplate restTemplate = new RestTemplate();
+		String busName ="XYZ";
+		Integer locnNbr = 3456;
+		String userCreateURL = "https://" +userServiceHost + ":" + userPort + "/user/v1/" + busName + "/" + locnNbr
+				+ "/user";
+		System.out.println("user createUser url:" + userCreateURL);
+		UserCreationRequestDTO userCreationReq = new UserCreationRequestDTO();
+		userCreationReq.setUserName("julerl@gmail.com");
+		userCreationReq.setFirstName("john");
+		userCreationReq.setLastName("uler");
+		userCreationReq.setMiddleName(RandomStringUtils.random(4,true, false));
+		userCreationReq.setAddr1(RandomStringUtils.random(4,false, true));
+		userCreationReq.setAddr2(RandomStringUtils.random(10,true, false));
+		userCreationReq.setAddr3(RandomStringUtils.random(10,true, false));
+		userCreationReq.setBusName(busName);
+		userCreationReq.setDefLocnNbr(locnNbr);
+		userCreationReq.setAuthType("google");
+		userCreationReq.setAuthToken(RandomStringUtils.random(6,true, true));
+		userCreationReq.setCity(RandomStringUtils.random(6,true, false));
+		userCreationReq.setState(RandomStringUtils.random(2,true, false));
+		userCreationReq.setCountry(RandomStringUtils.random(10,true, false));
+		userCreationReq.setZipCode(RandomStringUtils.random(5,false, true));
+		userCreationReq.setLocale(Locale.getDefault().getDisplayName());
+		
+		UserResourceDTO userResourceDTO = restTemplate.postForObject(userCreateURL, userCreationReq, UserResourceDTO.class);
+		System.out.println("User Create Reponse:" + userResourceDTO);
+	}
+
 	@Test
 	public void createInventoryAndCustomerOrdersOneOrdeLinePerCustomerOrder() throws Exception {
 		String busName = "XYZ";
@@ -138,7 +185,7 @@ public class WarehouseCustomerOrderInventoryCreationTest {
 		String company = "IE";
 		String division = "09";
 		String userId = "Krishna";
-		int numOfOrders = 5;
+		int numOfOrders = 1000;
 		int numOfOrderLines = 1; // num of order lines
 		int numOfOrdersPerBatch = 1;
 
@@ -259,7 +306,7 @@ public class WarehouseCustomerOrderInventoryCreationTest {
 				orderFulfillmentReq.setBusUnit(busUnit);
 				orderFulfillmentReq.setWarehouseMode(true);
 				orderFulfillmentReq.setOrderIdList(orderIdList);
-				String orderPlannerPlanOrderURL = "http://"+orderPlannerServiceHost + ":" + orderPlannerPort + "/orderplanner/v1/" + busName + "/" + locnNbr;
+				String orderPlannerPlanOrderURL = "https://"+orderPlannerServiceHost + ":" + orderPlannerPort + "/orderplanner/v1/" + busName + "/" + locnNbr;
 				System.out.println("order planner plan order url:" + orderPlannerPlanOrderURL);
 				OrderFulfillmentResourceDTO response = restTemplate.postForObject(
 						orderPlannerPlanOrderURL,
@@ -284,7 +331,7 @@ public class WarehouseCustomerOrderInventoryCreationTest {
 			String batchNbr = batchNbrList.get(j);
 			System.out.println("Batch Nbr:" + batchNbr);
 			String containerNbr = 5 + RandomStringUtils.random(19, false, true);
-			String pickAssignURL = "http://" + pickingServiceHost + ":" + pickingPort + "/picking/v1/" + busName + "/" + locnNbr
+			String pickAssignURL = "https://" + pickingServiceHost + ":" + pickingPort + "/picking/v1/" + busName + "/" + locnNbr
 					+ "/picks/next/" + batchNbr + "/" + userId;
 			System.out.println("pick assign url:" + pickAssignURL);
 			PickResourceDTO pickDTO = restTemplate.postForObject(pickAssignURL, null, PickResourceDTO.class);
@@ -297,7 +344,7 @@ public class WarehouseCustomerOrderInventoryCreationTest {
 						pickDTO.getBatchNbr(), pickDTO.getBusName(), pickDTO.getLocnNbr(), pickDTO.getBusUnit(),
 						pickDTO.getCompany(), pickDTO.getDivision(), pickDTO.getOrderNbr(), pickDTO.getLocnBrcd(),
 						pickDTO.getItemBrcd(), pickDTO.getQty(), containerNbr, userId);
-				String pickConfirmURL = "http://" + pickingServiceHost + ":" + pickingPort + "/picking/v1/" + busName + "/" + locnNbr
+				String pickConfirmURL = "https://" + pickingServiceHost + ":" + pickingPort + "/picking/v1/" + busName + "/" + locnNbr
 						+ "/picks/" + pickDTO.getId();
 				System.out.println("pick confirm url:" + pickConfirmURL);
 				PickResourceDTO pickConfirmDTO = restTemplate.postForObject(pickConfirmURL, pickConfirmObj, PickResourceDTO.class);
@@ -321,7 +368,7 @@ public class WarehouseCustomerOrderInventoryCreationTest {
 		RestTemplate restTemplate = new RestTemplate();
 		for (int j = 0; j < toteNbrList.size(); j++) {
 			String toteNbr = toteNbrList.get(j);
-			String packsGETURL = "http://" + packingServiceHost + ":" + packingPort + "/packing/v1/" + busName + "/" + locnNbr
+			String packsGETURL = "https://" + packingServiceHost + ":" + packingPort + "/packing/v1/" + busName + "/" + locnNbr
 					+ "/packs/container/" + toteNbr;
 			System.out.println("pack getpacks url:" + packsGETURL);
 			// List<PackDTO> packDTOList = restTemplate.getForObject(packsGETURL,
@@ -339,7 +386,7 @@ public class WarehouseCustomerOrderInventoryCreationTest {
 						packDTO.getBatchNbr(), packDTO.getBusName(), packDTO.getLocnNbr(), packDTO.getBusUnit(),
 						packDTO.getCompany(), packDTO.getDivision(), packDTO.getOrderNbr(), packDTO.getItemBrcd(),
 						packDTO.getQty(), toteNbr, "", userId);
-				String packConfirmURL = "http://" + packingServiceHost + ":" + packingPort + "/packing/v1/" + busName + "/" + locnNbr
+				String packConfirmURL = "https://" + packingServiceHost + ":" + packingPort + "/packing/v1/" + busName + "/" + locnNbr
 						+ "/packs/" + packDTO.getId();
 				System.out.println("pack confirm url:" + packConfirmURL);
 				PackResourceDTO pickConfirmDTO = restTemplate.postForObject(packConfirmURL, packConfirmObj, PackResourceDTO.class);
