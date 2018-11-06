@@ -32,7 +32,14 @@ public class CustomerOrderCreator {
 				InventoryResourceDTO invnResponseResource = EventResourceConverter.getObject(invnCreatedEvent.getEventResource(), InventoryResourceDTO.class);
 				String upc = invnResponseResource.getItemBrcd();//RandomStringUtils.random(20, false, true);
 				Integer qty = invnResponseResource.getQty();//rand.nextInt(9);
-				CustomerOrderLineCreationRequestDTO orderLine = new CustomerOrderLineCreationRequestDTO(line, upc, qty, qty, "", "");
+				CustomerOrderLineCreationRequestDTO orderLine = new CustomerOrderLineCreationRequestDTO();
+				orderLine.setBusName(invnResponseResource.getBusName());
+				orderLine.setLocnNbr(invnResponseResource.getLocnNbr());
+				orderLine.setOrderQty(qty);
+				orderLine.setOrigOrderQty(qty);
+				orderLine.setItemBrcd(upc);
+				orderLine.setOrderLineNbr(line);
+				
 				orderLines.add(orderLine);
 			}
 			LocalDateTime orderDttm = LocalDateTime.now();

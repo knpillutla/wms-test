@@ -23,7 +23,7 @@ public class InventoryCreator {
 			String areaZone = RandomStringUtils.random(2, 0, 4, true, false, 'A','B','C','D','E');
 			String level = RandomStringUtils.random(1, 0, 5, true, false, 'A','B','C','D','E','F');
 			InventoryCreationRequestDTO inventoryReq = new InventoryCreationRequestDTO("XYZ", 3456, "71", "", "", areaZone+aisle+level+position,
-					RandomStringUtils.random(20, false, true), qty, "", false, "Krishna", false);
+					RandomStringUtils.random(20, false, true), qty, "", "N", "Krishna", "N");
 			invnCreationReqList.add(inventoryReq);
 		}
 		System.out.println("Created Inventory for :" + invnCreationReqList.size() +" UPCs");

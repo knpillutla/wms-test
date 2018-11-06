@@ -56,12 +56,12 @@ public class UserCreationTest {
 	    });
 	}	
 	
-	String userPort = "9016";
-	String userServiceHost = "localhost";
+//	String userPort = "9016";
+//	String userServiceHost = "localhost";
 	
 	// gcp ports
-//	String userServiceHost = "35.221.78.28";
-//	String userPort = "8080";*/
+	String userServiceHost = "user-auth.the3dsoft.com";
+	String userPort = "443";
 	
 	@Test
 	public void createUser() {
@@ -72,7 +72,7 @@ public class UserCreationTest {
 		System.out.println("user createUser url:" + userCreateURL);
 		// create new user
 		String authToken = RandomStringUtils.random(6,true, true);
-		UserCreationRequestDTO userCreationReq = createUserCreationReq(busName, locnNbr, "john.doe@gmail", "John", "Doe", "user", authToken);
+		UserCreationRequestDTO userCreationReq = createUserCreationReq(busName, locnNbr, "b.edward@gmail", "Brad", "Edward", "user", authToken);
 		UserResourceDTO userResourceDTO = restTemplate.postForObject(userCreateURL, userCreationReq, UserResourceDTO.class);
 		System.out.println("User Create Reponse:" + userResourceDTO);
 		
