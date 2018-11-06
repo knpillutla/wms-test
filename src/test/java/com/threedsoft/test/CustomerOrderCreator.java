@@ -47,7 +47,7 @@ public class CustomerOrderCreator {
 			LocalDateTime deliveryDttm = orderDttm.plusDays(7);
 			String deliveryType=  RandomStringUtils.randomAlphabetic(2, 2);
 			CustomerOrderCreationRequestDTO orderReq = new CustomerOrderCreationRequestDTO("XYZ", 3456, "", "", "71", externalBatchNbr,
-					"F"+RandomStringUtils.random(9, false, true), orderDttm, shipDttm, deliveryDttm,deliveryType , false, "",
+					"F"+RandomStringUtils.random(9, false, true), orderDttm, shipDttm, deliveryDttm,deliveryType , "N", "",
 					"Website", "CustomerOrderDownload", "", "", "Krishna", orderLines);
 			orderCreationReqList.add(orderReq);
 		}

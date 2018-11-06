@@ -48,7 +48,7 @@ public class TestRestEndPoint {
 		Random rand = new Random();
 		int orderNbr = rand.nextInt(10000);
 		CustomerOrderCreationRequestDTO orderCreationReq = new CustomerOrderCreationRequestDTO("AMZ", 1000, "", "", "", "TEST"+orderNbr,
-				"FIR0" +orderNbr , currentDate, shipDttm, expectedDeliveryDttm, "Express", false, "", "TestService",
+				"FIR0" +orderNbr , currentDate, shipDttm, expectedDeliveryDttm, "Express", "N", "", "TestService",
 				"TestCreateCustomerOrder", "", "", "Krishna", null);
 		return orderCreationReq;
 	}
