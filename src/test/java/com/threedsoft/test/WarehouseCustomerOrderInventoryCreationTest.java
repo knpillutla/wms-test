@@ -69,9 +69,9 @@ import junit.framework.Assert;
 		//"spring.cloud.stream.kafka.binder.headers[0]=eventName",
 		"spring.cloud.stream.kafka.binder.headers=eventName",
 		"spring.cloud.stream.kafka.binder.auto-create-topics=false",
-		"spring.cloud.stream.kafka.binder.brokers=localhost:29092",
+//		"spring.cloud.stream.kafka.binder.brokers=localhost:29092",
 		"spring.jackson.serialization.WRITE_DATES_AS_TIMESTAMPS=false",
-		//"spring.cloud.stream.kafka.binder.brokers=35.236.192.133:9092"
+		"spring.cloud.stream.kafka.binder.brokers=35.236.192.133:9092"
 		},
 		classes = { EventPublisher.class,
 				WMSStreams.class }, webEnvironment = SpringBootTest.WebEnvironment.NONE)
@@ -108,7 +108,7 @@ public class WarehouseCustomerOrderInventoryCreationTest {
 	    });
 	}	
 	
-	String customerOrderPort = "9010";
+/*	String customerOrderPort = "9010";
 	String orderPlannerPort = "9011";
 	String inventoryPort = "9012";
 	String pickingPort = "9013";
@@ -124,7 +124,7 @@ public class WarehouseCustomerOrderInventoryCreationTest {
 	String shippingServiceHost = "localhost";
 	String eventMonitorServiceHost = "localhost";
 	String userServiceHost = "localhost";
-	
+*/	
 	// gcp ports
 //	String configPort = "32444";
 //	String customerOrderPort = "32445";
@@ -134,14 +134,14 @@ public class WarehouseCustomerOrderInventoryCreationTest {
 //	String pickingPort = "32449";
 //	String shippingPort = "32450";
 //	String eventMonitorPort = "32450";
-/*	String orderPlannerServiceHost = "orderplanner.the3dsoft.com";
-	String pickingServiceHost = "picking.the3dsoft.com";
-	String packingServiceHost = "packing.the3dsoft.com";
-	String inventoryServiceHost = "inventory.the3dsoft.com";
-	String customerOrderServiceHost = "customer-order.the3dsoft.com";
-	String shippingServiceHost = "35.221.46.27";
-	String eventMonitorServiceHost = "35.221.46.27";
-	String userServiceHost = "user-auth.the3dsoft.com";
+	String orderPlannerServiceHost = "the3dsoft.com";
+	String pickingServiceHost = "the3dsoft.com";
+	String packingServiceHost = "the3dsoft.com";
+	String inventoryServiceHost = "the3dsoft.com";
+	String customerOrderServiceHost = "the3dsoft.com";
+	String shippingServiceHost = "the3dsoft.com";
+	String eventMonitorServiceHost = "the3dsoft.com";
+	String userServiceHost = "the3dsoft.com";
 	String configPort = "8888";
 	String customerOrderPort = "443";
 	String inventoryPort = "443";
@@ -151,7 +151,7 @@ public class WarehouseCustomerOrderInventoryCreationTest {
 	String shippingPort = "443";
 	String eventMonitorPort = "443";
 	String userPort = "443";
-*/	
+	
 	
 	public void createUser() {
 		RestTemplate restTemplate = new RestTemplate();
