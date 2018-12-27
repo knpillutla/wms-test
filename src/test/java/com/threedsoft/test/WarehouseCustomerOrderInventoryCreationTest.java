@@ -190,7 +190,7 @@ public class WarehouseCustomerOrderInventoryCreationTest {
 		String company = "IE";
 		String division = "09";
 		String userId = "Krishna";
-		int numOfOrders = 100;
+		int numOfOrders = 3;
 		int numOfOrderLines = 1; // num of order lines
 		int numOfOrdersPerBatch = 20;
 		int numOfPickers = 25;
