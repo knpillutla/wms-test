@@ -74,11 +74,11 @@ import junit.framework.Assert;
 		"spring.cloud.stream.kafka.binder.brokers=35.186.182.236:9092"
 		},
 		classes = { EventPublisher.class,
-				WMSStreams.class }, webEnvironment = SpringBootTest.WebEnvironment.NONE)
-@EnableBinding(WMSStreams.class)
-public class WarehouseCustomerOrderInventoryCreationTest {
+				WMSStreamsDev.class }, webEnvironment = SpringBootTest.WebEnvironment.NONE)
+@EnableBinding(WMSStreamsDev.class)
+public class WarehouseCustomerOrderInventoryCreationDevTest {
 	@Autowired
-	WMSStreams wmsStreams;
+	WMSStreamsDev wmsStreams;
 	List<InventoryCreatedEvent> invnCreatedEventList = new ArrayList();
 	List<CustomerOrderCreatedEvent> customerOrderCreatedEventList = new ArrayList();
 
@@ -190,8 +190,8 @@ public class WarehouseCustomerOrderInventoryCreationTest {
 		String company = "IE";
 		String division = "09";
 		String userId = "Krishna";
-		int numOfOrders = 100;
-		int numOfOrderLines = 3; // num of order lines
+		int numOfOrders = 3;
+		int numOfOrderLines = 1; // num of order lines
 		int numOfOrdersPerBatch = 20;
 		int numOfPickers = 25;
 		int numOfPackers = 15;
@@ -235,14 +235,22 @@ public class WarehouseCustomerOrderInventoryCreationTest {
 		List<PickCreatedEvent> pickCreatedEventList = pickEventReceiver.getEvent(PickCreatedEvent.class);
 		Assert.assertEquals(numOfOrders * numOfOrderLines, pickCreatedEventList.size());
 
+		// check order allocated events
+/*		List<OrderPlannedEvent> orderAllocatedEventList = orderEventReceiver.getEvent(OrderAllocatedEvent.class);
+		Assert.assertEquals(numOfOrders*2, orderAllocatedEventList.size());
+*/
+		// ensure ship is created
+		/*
+		 * List<ShipCreatedEvent> shipEventList =
+		 * shipEventReceiver.getEvent(ShipCreatedEvent.class);
+		 * Assert.assertEquals(numOfOrders, shipEventList.size());
+		 */
 		// ensure ship is routed
 		List<ShipRoutingCompletedEvent> shipRoutingCompletedEventList = shipEventReceiver
 				.getEvent(ShipRoutingCompletedEvent.class);
 		Assert.assertEquals(numOfOrders, shipRoutingCompletedEventList.size());
 
-/*		
-  	    // start pick/pack/ship
- 		List<String> toteList = this.pickAllOrders(busName, locnNbr, company, division, busUnit, numOfOrders,
+		List<String> toteList = this.pickAllOrders(busName, locnNbr, company, division, busUnit, numOfOrders,
 				numOfOrderLines, numOfPickers, batchNbrList);
 		List<PickConfirmationEvent> pickConfirmationEventList = pickEventReceiver.getEvent(PickConfirmationEvent.class);
 		Assert.assertEquals(numOfOrders * numOfOrderLines, pickConfirmationEventList.size());
@@ -264,7 +272,6 @@ public class WarehouseCustomerOrderInventoryCreationTest {
 
 		List<OrderPackedEvent> orderPackedEventList = orderEventReceiver.getEvent(OrderPackedEvent.class);
 		Assert.assertEquals(numOfOrders, orderPackedEventList.size());
-*/
 	}
 /*
 	// @Test

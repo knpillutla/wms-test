@@ -56,8 +56,9 @@ public class SmallStoreCustomerOrderInventoryCreationTest {
 		String userId = "Krishna";
 		int numOfOrders = 1;
 		int numOfOrderLines = 1; // num of order lines
+		String kafkaHost="localhost";
 		EventReceiver inventoryEventReceiver = new EventReceiver("ss-wmsinventorycreator-consumer",
-				wmsStreams.INVENTORY_OUTPUT);
+				wmsStreams.INVENTORY_OUTPUT,kafkaHost);
 		List<InventoryCreationRequestDTO> invnCreationReqList = InventoryCreator
 				.createNewInventoryRecords(numOfOrders * numOfOrderLines);
 		for (InventoryCreationRequestDTO inventoryReq : invnCreationReqList) {
@@ -71,7 +72,7 @@ public class SmallStoreCustomerOrderInventoryCreationTest {
 
 		Assert.assertEquals(numOfOrders*numOfOrderLines, invnCreatedEventList.size());
 		EventReceiver orderEventReceiver = new EventReceiver("ss-wmscustomerordercreator-consumer",
-				wmsStreams.CUSTOMER_ORDERS_OUTPUT);
+				wmsStreams.CUSTOMER_ORDERS_OUTPUT,kafkaHost);
 		List<CustomerOrderCreationRequestDTO> orderCreationReqList = CustomerOrderCreator
 				.createNewCustomerOrders(invnCreatedEventList, numOfOrders, numOfOrderLines);
 		for (CustomerOrderCreationRequestDTO orderCreationReq : orderCreationReqList) {

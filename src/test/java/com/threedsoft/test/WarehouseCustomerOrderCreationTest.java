@@ -58,10 +58,11 @@ public class WarehouseCustomerOrderCreationTest {
 		String userId = "Krishna";
 		int numOfOrders = 1;
 		int numOfOrderLines = 1; // num of order lines
+		String kafkaHost="localhost";
 		EventReceiver custOrderEventReceiver = new EventReceiver("whse-customerOrder-consumer",
-				wmsStreams.CUSTOMER_ORDERS_OUTPUT);
+				wmsStreams.CUSTOMER_ORDERS_OUTPUT,kafkaHost);
 		EventReceiver inventoryEventReceiver = new EventReceiver("whse-inventory-consumer",
-				wmsStreams.INVENTORY_OUTPUT);
+				wmsStreams.INVENTORY_OUTPUT,kafkaHost);
 
 		List<InventoryCreationRequestDTO> invnCreationReqList = InventoryCreator
 				.createNewInventoryRecords(numOfOrders * numOfOrderLines);

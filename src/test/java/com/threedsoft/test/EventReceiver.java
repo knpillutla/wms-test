@@ -31,12 +31,13 @@ public class EventReceiver {
 			mapper = this.getObjectMapper();
 		return mapper;
 	}
-	public EventReceiver(String consumerGroup, String topicName) {
+
+	public EventReceiver(String consumerGroup, String topicName, String serverHost) {
 		this.topicName = topicName;
 		mapper = this.getObjectMapper();
 		Properties props = new Properties();
 	//	props.put("bootstrap.servers", "10.0.75.1:29092");
-		props.put("bootstrap.servers", "35.186.182.236:9092");
+		props.put("bootstrap.servers", serverHost+":9092");
 		//props.put("auto.create.topics.enable", "false");
 //		 props.put("sasl.jaas.config", "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"USER\" password=\"PASSWORD\";");
 //		 props.put("security.protocol", "SASL_SSL");
@@ -146,10 +147,10 @@ public class EventReceiver {
 			while (itr.hasNext()) {
 				totalRecords++;
 				record = (ConsumerRecord) itr.next();
-				System.out.println("Event Receiver, record.value:" + record.value().toString());
+				//System.out.println("Event Receiver, record.value:" + record.value().toString());
 				T obj = (T) mapper.readValue(record.value().toString(), cls);
 				eventList.add(obj);
-				System.out.println("Event Receiver, received event:" + obj);
+				//System.out.println("Event Receiver, received event:" + obj);
 				System.out.println("loop:" + i + ",record count:" + recordCount + ",totalRecords:" + totalRecords);
 				consumer.commitSync();
 			}

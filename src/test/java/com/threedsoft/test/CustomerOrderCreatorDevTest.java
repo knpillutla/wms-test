@@ -32,17 +32,17 @@ import com.threedsoft.test.service.EventPublisher;
 		"spring.cloud.stream.bindings.inventory-out.contentType=application/json",
 		// "spring.kafka.consumer.group-id=test",
 		"spring.cloud.stream.kafka.binder.brokers=localhost:29092" }, classes = { EventPublisher.class,
-				WMSStreams.class }, webEnvironment = SpringBootTest.WebEnvironment.NONE)
-@EnableBinding(WMSStreams.class)
-public class CustomerOrderCreatorTest {
+				WMSStreamsDev.class }, webEnvironment = SpringBootTest.WebEnvironment.NONE)
+@EnableBinding(WMSStreamsDev.class)
+public class CustomerOrderCreatorDevTest {
 	@Autowired
-	WMSStreams wmsStreams;
+	WMSStreamsDev wmsStreams;
 
 	List<InventoryCreatedEvent> invnCreatedEventList = new ArrayList();
-	String kafkaHost="localhost";
 
 	@Test
 	public void createNewCustomerOrders() throws Exception {
+		String kafkaHost = "localhost";
 		EventReceiver receiver = new EventReceiver("wmsinventorycreator-consumer", "orders-out",kafkaHost);
 		String externalBatchNbr = RandomStringUtils.random(10, false, true);
 		for (int i = 0; i < 50; i++) {

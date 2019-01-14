@@ -48,8 +48,9 @@ public class InventoryCreationTest {
 		String userId = "Krishna";
 		int numOfOrders = 5;
 		int numOfOrderLines = 5; // num of order lines
+		String kafkaHost="localhost";
 		EventReceiver inventoryEventReceiver = new EventReceiver("ss-wmsinventorycreator-consumer",
-				wmsStreams.INVENTORY_OUTPUT);
+				wmsStreams.INVENTORY_OUTPUT,kafkaHost);
 		List<InventoryCreationRequestDTO> invnCreationReqList = InventoryCreator
 				.createNewInventoryRecords(numOfOrders * numOfOrderLines);
 		for (InventoryCreationRequestDTO inventoryReq : invnCreationReqList) {
