@@ -37,8 +37,8 @@ public class EventReceiver {
 		mapper = this.getObjectMapper();
 		Properties props = new Properties();
 	//	props.put("bootstrap.servers", "10.0.75.1:29092");
-		props.put("bootstrap.servers", serverHost+":9092");
-		//props.put("auto.create.topics.enable", "false");
+		props.put("bootstrap.servers", serverHost);
+		//\props.put("auto.create.topics.enable", "false");
 //		 props.put("sasl.jaas.config", "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"USER\" password=\"PASSWORD\";");
 //		 props.put("security.protocol", "SASL_SSL");
 //		 props.put("sasl.mechanism", "PLAIN");

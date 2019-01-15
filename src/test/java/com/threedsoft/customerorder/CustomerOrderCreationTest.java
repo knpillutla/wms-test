@@ -45,21 +45,21 @@ import com.threedsoft.util.dto.events.WMSEvent;
 		// "spring.cloud.stream.kafka.binder.headers[0]=eventName",
 		"spring.cloud.stream.kafka.binder.headers=eventName",
 		"spring.cloud.stream.kafka.binder.auto-create-topics=false",
-		// "spring.cloud.stream.kafka.binder.brokers=10.0.75.1:29092",
+		// "spring.cloud.stream.kafka.binder.brokers=kafka",
 		"spring.jackson.serialization.WRITE_DATES_AS_TIMESTAMPS=false",
-		"spring.cloud.stream.kafka.binder.brokers=localhost:9092" }, classes = { EventPublisher.class,
+		"spring.cloud.stream.kafka.binder.brokers=localhost" }, classes = { EventPublisher.class,
 				CustomerOrderStreams.class }, webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @EnableBinding(CustomerOrderStreams.class)
 public class CustomerOrderCreationTest {
 	@Autowired
 	CustomerOrderStreams wmsStreams;
 	List<WMSEvent> customerOrderCreatedEventList = new ArrayList();
-	String kafkaHost = "localhost";
+	String kafkaHost = "localhost:9092";
 	EventReceiver custOrderEventReceiver = new EventReceiver("CustomerOrderReceiver", wmsStreams.CUSTOMER_ORDERS_OUTPUT,
 			kafkaHost);
 	String SERVICE_NAME = "CustomerOrderTest";
 
-	public CustomerOrderDTO createCustomerOrder() {
+	public CustomerOrderDTO createCustomerOrder(int numOfItems, int numOfItemAttribs) {
 		CustomerOrderDTO customerOrderDTO = new CustomerOrderDTO();
 		customerOrderDTO.setBusName("XYZ");// .setLogin("johndoe");
 		customerOrderDTO.setFacilityNbr("3434");
@@ -75,7 +75,7 @@ public class CustomerOrderCreationTest {
 		customerOrderDTO.setDelZipCode("9393");
 		customerOrderDTO.setCreatedBy("amazon");
 		customerOrderDTO.setUpdatedBy("amazon");
-		customerOrderDTO.setOrderLines(createCustomerOrderLines(2,3));
+		customerOrderDTO.setOrderLines(createCustomerOrderLines(numOfItems, numOfItemAttribs));
 		return customerOrderDTO;
 	}
 
@@ -88,7 +88,7 @@ public class CustomerOrderCreationTest {
 			customerOrderLineDTO.setQty(RandomUtils.nextInt(50));
 			customerOrderLineDTO.setOrigQty(customerOrderLineDTO.getQty());
 			Set<CustomerOrderLineAttributeDTO> attribs = new HashSet();
-			for(int j=0;j<numOfAttribs;j++) {
+			for (int j = 0; j < numOfAttribs; j++) {
 				CustomerOrderLineAttributeDTO attrib = new CustomerOrderLineAttributeDTO();
 				attrib.setKey(RandomStringUtils.randomAlphabetic(8));
 				attrib.setValue(RandomStringUtils.randomAlphabetic(15));
@@ -100,23 +100,35 @@ public class CustomerOrderCreationTest {
 		return orderLines;
 	}
 
+	public void createCustomerOrderList(int numOfOrders, int numOfItems, int numOfItemAttribs) {
+		for (int i = 0; i < numOfOrders; i++) {
+			CustomerOrderDTO customerOrderDTO = createCustomerOrder(numOfItems, numOfItemAttribs);
+			WMSEvent customerOrderEvent = new WMSEvent("NewCustomerOrderEvent", customerOrderDTO.getBusName(),
+					customerOrderDTO.getFacilityNbr(), customerOrderDTO.getCompany(), customerOrderDTO.getDivision(),
+					null, "order", customerOrderDTO.getOrderNbr(), "customerorder", customerOrderDTO);
+			EventPublisher.send(wmsStreams.inboundCustomerOrders(), customerOrderEvent,
+					customerOrderEvent.getHeaderMap());
+		}
+	}
+
 	@Test
-	public void assertThatUserIsSaved() throws Exception {
-		CustomerOrderDTO customerOrderDTO = createCustomerOrder();
-		WMSEvent customerOrderEvent = new WMSEvent("NewCustomerOrderEvent", customerOrderDTO.getBusName(),
-				customerOrderDTO.getFacilityNbr(), customerOrderDTO.getCompany(), customerOrderDTO.getDivision(), null,
-				"order", customerOrderDTO.getOrderNbr(), "customerorder", customerOrderDTO);
-		EventPublisher.send(wmsStreams.inboundCustomerOrders(), customerOrderEvent, customerOrderEvent.getHeaderMap());
+	public void assertThatCustomerOrdersAreCreated() throws Exception {
+		int numOfOrders = 10;
+		int numOfItemsForEachOrder = 2;
+		int numOfAttribsForEachItem = 3;
+		createCustomerOrderList(numOfOrders, numOfItemsForEachOrder, numOfAttribsForEachItem);
 		List<WMSEvent> wmsEventList = custOrderEventReceiver.getEvent(WMSEvent.class);
 		assertNotNull(wmsEventList);
-		assertEquals(1, wmsEventList.size());
-		System.out.println("Received event:" + wmsEventList.get(0));
+		assertEquals(numOfOrders, wmsEventList.size());
+		for (WMSEvent event : wmsEventList) {
+			System.out.println("Received event:" + event);
 
-		CustomerOrderDTO createdCustomerOrderDTO = EventResourceConverter
-				.getObject(wmsEventList.get(0).getEventResource(), CustomerOrderDTO.class);
-		assertEquals(2, createdCustomerOrderDTO.getOrderLines().size());
-		for(CustomerOrderLineDTO orderLine:createdCustomerOrderDTO.getOrderLines()) {
-			assertEquals(3, orderLine.getAttributes().size());
+			CustomerOrderDTO createdCustomerOrderDTO = EventResourceConverter
+					.getObject(event.getEventResource(), CustomerOrderDTO.class);
+			assertEquals(numOfItemsForEachOrder, createdCustomerOrderDTO.getOrderLines().size());
+			for (CustomerOrderLineDTO orderLine : createdCustomerOrderDTO.getOrderLines()) {
+				assertEquals(numOfAttribsForEachItem, orderLine.getAttributes().size());
+			}
 		}
 	}
 }
