@@ -16,15 +16,10 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.stream.annotation.EnableBinding;
-import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JSR310Module;
 import com.threedsoft.customerorder.service.dto.CustomerOrderDTO;
+import com.threedsoft.customerorder.service.dto.CustomerOrderLineAttributeDTO;
 import com.threedsoft.customerorder.service.dto.CustomerOrderLineDTO;
 import com.threedsoft.test.EventReceiver;
 import com.threedsoft.test.EventResourceConverter;
@@ -80,21 +75,29 @@ public class CustomerOrderCreationTest {
 		customerOrderDTO.setDelZipCode("9393");
 		customerOrderDTO.setCreatedBy("amazon");
 		customerOrderDTO.setUpdatedBy("amazon");
-		customerOrderDTO.setOrderLines(createCustomerOrderLines(2));
+		customerOrderDTO.setOrderLines(createCustomerOrderLines(2,3));
 		return customerOrderDTO;
 	}
 
-	public Set<CustomerOrderLineDTO> createCustomerOrderLines(int numOfItems) {
-		Set<CustomerOrderLineDTO> orderLineList = new HashSet();
+	public Set<CustomerOrderLineDTO> createCustomerOrderLines(int numOfItems, int numOfAttribs) {
+		Set<CustomerOrderLineDTO> orderLines = new HashSet();
 		for (int i = 0; i < numOfItems; i++) {
 			CustomerOrderLineDTO customerOrderLineDTO = new CustomerOrderLineDTO();
 			customerOrderLineDTO.setLineNbr(i + 1);
 			customerOrderLineDTO.setItemBrcd(RandomStringUtils.randomNumeric(10));
 			customerOrderLineDTO.setQty(RandomUtils.nextInt(50));
 			customerOrderLineDTO.setOrigQty(customerOrderLineDTO.getQty());
-			orderLineList.add(customerOrderLineDTO);
+			Set<CustomerOrderLineAttributeDTO> attribs = new HashSet();
+			for(int j=0;j<numOfAttribs;j++) {
+				CustomerOrderLineAttributeDTO attrib = new CustomerOrderLineAttributeDTO();
+				attrib.setKey(RandomStringUtils.randomAlphabetic(8));
+				attrib.setValue(RandomStringUtils.randomAlphabetic(15));
+				attribs.add(attrib);
+			}
+			customerOrderLineDTO.setAttributes(attribs);
+			orderLines.add(customerOrderLineDTO);
 		}
-		return orderLineList;
+		return orderLines;
 	}
 
 	@Test
@@ -112,5 +115,8 @@ public class CustomerOrderCreationTest {
 		CustomerOrderDTO createdCustomerOrderDTO = EventResourceConverter
 				.getObject(wmsEventList.get(0).getEventResource(), CustomerOrderDTO.class);
 		assertEquals(2, createdCustomerOrderDTO.getOrderLines().size());
+		for(CustomerOrderLineDTO orderLine:createdCustomerOrderDTO.getOrderLines()) {
+			assertEquals(3, orderLine.getAttributes().size());
+		}
 	}
 }
