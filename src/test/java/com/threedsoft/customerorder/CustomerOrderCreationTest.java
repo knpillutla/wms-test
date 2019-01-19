@@ -101,14 +101,14 @@ public class CustomerOrderCreationTest {
 	}
 
 	public void createCustomerOrderList(int numOfOrders, int numOfItems, int numOfItemAttribs) {
-		for (int i = 0; i < numOfOrders; i++) {
+/*		for (int i = 0; i < numOfOrders; i++) {
 			CustomerOrderDTO customerOrderDTO = createCustomerOrder(numOfItems, numOfItemAttribs);
 			WMSEvent customerOrderEvent = new WMSEvent("NewCustomerOrderEvent", customerOrderDTO.getBusName(),
 					customerOrderDTO.getFacilityNbr(), customerOrderDTO.getCompany(), customerOrderDTO.getDivision(),
 					null, "order", customerOrderDTO.getOrderNbr(), "customerorder", customerOrderDTO);
 			EventPublisher.send(wmsStreams.inboundCustomerOrders(), customerOrderEvent,
 					customerOrderEvent.getHeaderMap());
-		}
+		}*/
 	}
 
 	@Test

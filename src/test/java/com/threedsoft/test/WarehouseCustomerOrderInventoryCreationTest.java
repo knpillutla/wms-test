@@ -71,7 +71,7 @@ import junit.framework.Assert;
 		"spring.cloud.stream.kafka.binder.auto-create-topics=false",
 		//"spring.cloud.stream.kafka.binder.brokers=10.0.75.1:29092",
 		"spring.jackson.serialization.WRITE_DATES_AS_TIMESTAMPS=false",
-		"spring.cloud.stream.kafka.binder.brokers=35.186.182.236:9092"
+		"spring.cloud.stream.kafka.binder.brokers=35.245.101.144:31111"
 		},
 		classes = { EventPublisher.class,
 				WMSStreams.class }, webEnvironment = SpringBootTest.WebEnvironment.NONE)
@@ -83,7 +83,7 @@ public class WarehouseCustomerOrderInventoryCreationTest {
 	List<CustomerOrderCreatedEvent> customerOrderCreatedEventList = new ArrayList();
 
 
-	String kafkaHost = "35.186.182.236";
+	String kafkaHost = "35.245.101.144:31111";
 	EventReceiver custOrderEventReceiver = new EventReceiver("whse-customerOrder-consumer",
 			wmsStreams.CUSTOMER_ORDERS_OUTPUT,kafkaHost);
 	EventReceiver inventoryEventReceiver = new EventReceiver("whse-inventory-consumer",
